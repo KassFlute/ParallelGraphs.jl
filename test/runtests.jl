@@ -3,5 +3,5 @@ using Test
 
 @testset "ParallelGraphs.jl" begin
     # Write your tests here.
-    @test returnTrue() = true
+    @test returnTrue() ≈ true
 end
