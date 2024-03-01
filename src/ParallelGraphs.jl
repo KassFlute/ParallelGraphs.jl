@@ -1,9 +1,9 @@
 module ParallelGraphs
-using Graphs
 
-include("FichierBidon.jl")
-# Write your package code here.
+using Graphs: vertices, edges
 
-export returnTrue
+include("fichier_bidon.jl")
+
+export return_true, return_false
 
 end
