@@ -16,5 +16,24 @@ using Test
     end
     @testset "Actual tests" begin
         @test return_true() == true
+
+        @testset "BFS" begin
+            adjacency_matrix = [
+                0 1 1 0
+                1 0 0 1
+                1 0 0 1
+                0 1 1 0
+            ]
+            graph = SimpleGraph(adjacency_matrix)
+
+            expected_order = [1, 2, 3, 4]
+            @test bfs(graph, 1) == expected_order
+            expected_order = [2, 1, 4, 3]
+            @test bfs(graph, 2) == expected_order
+            expected_order = [3, 1, 4, 2]
+            @test bfs(graph, 3) == expected_order
+            expected_order = [4, 2, 3, 1]
+            @test bfs(graph, 4) == expected_order
+        end
     end
 end
