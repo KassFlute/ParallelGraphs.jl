@@ -16,6 +16,7 @@ using Test
     end
     @testset "Actual tests" begin
         @test return_true() == true
+        @test return_false() == false
 
         @testset "BFS" begin
             adjacency_matrix = [
