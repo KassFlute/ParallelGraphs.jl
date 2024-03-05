@@ -18,7 +18,7 @@ using Test
         @test return_true() == true
         @test return_false() == false
 
-        @testset "BFS" begin
+        @testset "BFS sequential" begin
             adjacency_matrix = [
                 0 1 1 0
                 1 0 0 1
@@ -35,6 +35,25 @@ using Test
             @test bfs(graph, 3) == expected_order
             expected_order = [4, 2, 3, 1]
             @test bfs(graph, 4) == expected_order
+        end
+
+        @testset "BFS parallel" begin
+            adjacency_matrix = [
+                0 1 1 0
+                1 0 0 1
+                1 0 0 1
+                0 1 1 0
+            ]
+            graph = SimpleGraph(adjacency_matrix)
+
+            expected_order = [1, 2, 3, 4]
+            @test bfs_par(graph, 1) == expected_order
+            expected_order = [2, 1, 4, 3]
+            @test bfs_par(graph, 2) == expected_order
+            expected_order = [3, 1, 4, 2]
+            @test bfs_par(graph, 3) == expected_order
+            expected_order = [4, 2, 3, 1]
+            @test bfs_par(graph, 4) == expected_order
         end
     end
 end
