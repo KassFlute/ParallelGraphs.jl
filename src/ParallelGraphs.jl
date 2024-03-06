@@ -5,6 +5,7 @@ using Graphs: vertices, edges, AbstractGraph, SimpleGraph, neighbors, add_edge!,
 using Base.Threads: @threads, @atomicreplace, Atomic, atomic_add!
 
 include("fichier_bidon.jl")
+include("utils.jl")
 include("traversals/BFS/bfs_seq.jl")
 include("traversals/BFS/bfs_par.jl")
 
