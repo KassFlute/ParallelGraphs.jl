@@ -20,7 +20,8 @@ end
 # Generate a random graph with 10,000 vertices and 50,000 edges
 const NUM_VERTICES = 10_000
 const NUM_EDGES = 50_000
-graph = generate_random_graph(NUM_VERTICES, NUM_EDGES)
+#graph = generate_random_graph(NUM_VERTICES, NUM_EDGES)
+graph = dorogovtsev_mendes(NUM_VERTICES)
 
 # Benchmark BFS
 const START_VERTEX = 1
