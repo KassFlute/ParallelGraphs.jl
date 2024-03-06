@@ -56,6 +56,7 @@ using Test
             @test bfs_par(graph, 4) == expected_order
         end
         @testset "BFS sequential Tree" begin
+            # On a simple graph
             adjacency_matrix = [
                 0 1 1 0
                 1 0 0 1
@@ -73,8 +74,29 @@ using Test
             expected_parents_2 = [2, 2, 4, 2]
             res = bfs_seq_tree(graph, 2)
             @test res == expected_parents_1 || res == expected_parents_2
+
+            # On a not-connected graph
+            adjacency_matrix = [
+                0 1 0 0 0 0
+                1 0 1 0 0 0
+                0 1 0 0 0 0
+                0 0 0 0 1 0
+                0 0 0 1 0 1
+                0 0 0 0 1 0
+            ]
+            graph = SimpleGraph(adjacency_matrix)
+
+            expected_parents_1 = [1, 1, 2, 0, 0, 0]
+            res = bfs_seq_tree(graph, 1)
+            @test res == expected_parents_1
+
+            expected_parents_1 = [0, 0, 0, 5, 5, 5]
+            res = bfs_seq_tree(graph, 5)
+            @test res == expected_parents_1
         end
+
         @testset "BFS Parallel Tree" begin
+            # On a simple graph
             adjacency_matrix = [
                 0 1 1 0
                 1 0 0 1
@@ -92,6 +114,30 @@ using Test
             expected_parents_2 = [2, 2, 4, 2]
             res = bfs_par_tree(graph, 2)
             @test res == expected_parents_1 || res == expected_parents_2
+
+            # On a not-connected graph
+            adjacency_matrix = [
+                0 1 0 0 0 0 0 0
+                1 0 1 0 0 0 0 0
+                0 1 0 0 0 0 0 0
+                0 0 0 0 1 0 0 0
+                0 0 0 1 0 1 1 0
+                0 0 0 0 1 0 1 1
+                0 0 0 0 1 1 0 1
+                0 0 0 0 0 1 1 0
+            ]
+            graph = SimpleGraph(adjacency_matrix)
+
+            expected_parents_1 = [1, 1, 2, 0, 0, 0, 0, 0]
+            res = bfs_seq_tree(graph, 1)
+            @test res == expected_parents_1
+
+            expected_parents_1 = [0, 0, 0, 4, 4, 5, 5, 7]
+            expected_parents_2 = [0, 0, 0, 4, 4, 5, 5, 6]
+
+            res = bfs_seq_tree(graph, 4)
+            @test (res == expected_parents_1) ⊻ (res == expected_parents_2) # XOR to check that only one is true
+
         end
     end
 end

@@ -1,8 +1,17 @@
 module ParallelGraphs
 
-using Graphs: vertices, edges, AbstractGraph, SimpleGraph, neighbors, add_edge!, nv
+using Graphs:
+    vertices,
+    edges,
+    AbstractGraph,
+    SimpleGraph,
+    neighbors,
+    add_edge!,
+    nv,
+    dorogovtsev_mendes
+
 #using OhMyThreads
-using Base.Threads: @threads, @atomicreplace, Atomic, atomic_add!
+using Base.Threads: @threads, @atomicreplace, Atomic, atomic_add!, atomic_cas!
 
 include("fichier_bidon.jl")
 include("utils.jl")

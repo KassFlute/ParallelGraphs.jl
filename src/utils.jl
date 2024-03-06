@@ -1,4 +1,4 @@
-## Version of a trhead-safe queue stolen from Graphs.jl
+## Version of a thread-safe queue stolen from Graphs.jl
 
 """
     ThreadQueue
