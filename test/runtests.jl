@@ -55,5 +55,43 @@ using Test
             expected_order = [4, 2, 3, 1]
             @test bfs_par(graph, 4) == expected_order
         end
+        @testset "BFS sequential Tree" begin
+            adjacency_matrix = [
+                0 1 1 0
+                1 0 0 1
+                1 0 0 1
+                0 1 1 0
+            ]
+            graph = SimpleGraph(adjacency_matrix)
+
+            expected_parents_1 = [1, 1, 1, 2]
+            expected_parents_2 = [1, 1, 1, 3]
+            res = bfs_seq_tree(graph, 1)
+            @test res == expected_parents_1 || res == expected_parents_2
+
+            expected_parents_1 = [2, 2, 1, 2]
+            expected_parents_2 = [2, 2, 4, 2]
+            res = bfs_seq_tree(graph, 2)
+            @test res == expected_parents_1 || res == expected_parents_2
+        end
+        @testset "BFS Parallel Tree" begin
+            adjacency_matrix = [
+                0 1 1 0
+                1 0 0 1
+                1 0 0 1
+                0 1 1 0
+            ]
+            graph = SimpleGraph(adjacency_matrix)
+
+            expected_parents_1 = [1, 1, 1, 2]
+            expected_parents_2 = [1, 1, 1, 3]
+            res = bfs_par_tree(graph, 1)
+            @test res == expected_parents_1 || res == expected_parents_2
+
+            expected_parents_1 = [2, 2, 1, 2]
+            expected_parents_2 = [2, 2, 4, 2]
+            res = bfs_par_tree(graph, 2)
+            @test res == expected_parents_1 || res == expected_parents_2
+        end
     end
 end
