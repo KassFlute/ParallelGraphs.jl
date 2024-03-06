@@ -14,10 +14,11 @@ add_edge!(g, 4, 1)
 bfs_seq(g, 1) # returns [1, 2, 4, 3]
 ```
 """
-function bfs_seq(graph::AbstractGraph, source::Integer)
-    queue = [source] # FIFO of vertices to visit
+function bfs_seq(graph::AbstractGraph, source::T) where {T<:Integer}
+    queue :: Vector{T} = Vector{T}(undef, 0) # FIFO of vertices to visit
     visited = Set([source]) # Set of visited vertices
     visited_order = [source] # Order of visited vertices
+    push!(queue, source)
 
     while !isempty(queue)
         v = popfirst!(queue)
@@ -34,9 +35,9 @@ function bfs_seq(graph::AbstractGraph, source::Integer)
     return visited_order
 end
 ## Parents should be filled with zeros
-function bfs_seq_tree!(graph::AbstractGraph, source::Integer, parents::Array{Int})
-    queue = Vector[source](0) # FIFO of vertices to visit
-    queue.push!(source)
+function bfs_seq_tree!(graph::AbstractGraph, source::T, parents::Array{T}) where {T<:Integer}
+    queue :: Vector{T} = Vector{T}(undef, 0) # FIFO of vertices to visit
+    push!(queue,source)
 
     parents[source] = source
 
@@ -54,7 +55,8 @@ function bfs_seq_tree!(graph::AbstractGraph, source::Integer, parents::Array{Int
     return parents
 end
 
-function bfs_seq_tree(graph::AbstractGraph, source::Integer)
-    parents = zeros([source], nv(graph)) # Set of Parent vertices
+function bfs_seq_tree(graph::AbstractGraph, source::T) where {T<:Integer}
+    #parents = Array{T} # Set of Parent vertices
+    parents = fill(0, nv(graph))
     return bfs_seq_tree!(graph, source, parents)
 end

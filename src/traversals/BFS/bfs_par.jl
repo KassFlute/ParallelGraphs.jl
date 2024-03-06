@@ -15,7 +15,7 @@ add_edge!(g, 4, 1)
 bfs_par(g, 1) # returns a vector containing all vertices in the order they were visited by all threads
 ```
 """
-function bfs_par(graph::AbstractGraph, source::Integer)
+function bfs_par(graph::AbstractGraph, source::T) where {T<:Integer}
     queue = [source] # FIFO of vertices to visit
     visited = Set([source]) # Set of visited vertices
     visited_order = [source] # Order of visited vertices
@@ -35,11 +35,11 @@ function bfs_par(graph::AbstractGraph, source::Integer)
     return visited_order
 end
 
-function bfs_par_tree!(graph::AbstractGraph, source::Integer, parents::Array{Atomic{Int}})
-    queue = ThreadQueue{source}(nv(graph))
+function bfs_par_tree!(graph::AbstractGraph, source::T, parents::Array{Atomic{T}}) where {T<:Integer}
+    queue = ThreadQueue(source, nv(graph))
     tpush!(queue, source)
 
-    parents[source] = source
+    parents[source] = Atomic{Int}(source)
 
     while !tisempty(queue)
         sources = queue.data[queue.head[]:(queue.tail[] - 1)]
@@ -53,7 +53,47 @@ function bfs_par_tree!(graph::AbstractGraph, source::Integer, parents::Array{Ato
     return parents
 end
 
-function bfs_par_tree(graph::AbstractGraph, source::Atomic{Int})
-    parents = zeros([source], nv(graph)) # Set of Parent vertices
-    return bfs_par_tree!(graph, source, parents)
+function bfs_par_tree(graph::AbstractGraph, source::T) where {T<:Integer}
+    parents = Array{Atomic{T}}(undef, nv(graph))
+    bfs_par_tree!(graph, source, parents)
+    return parents
+end
+
+
+# Pasted here because I don't know how to include it
+"""
+    ThreadQueue
+
+A thread safe queue implementation for using as the queue for BFS.
+"""
+struct ThreadQueue{T,N<:Integer}
+    data::Vector{T}
+    head::Atomic{N} # Index of the head
+    tail::Atomic{N} # Index of the tail
+end
+
+function ThreadQueue(T::Type, maxlength::N) where {N<:Integer}
+    q = ThreadQueue(Vector{T}(undef, maxlength), Atomic{N}(1), Atomic{N}(1))
+    return q
+end
+
+function t_push!(q::ThreadQueue{T,N}, val::T) where {T} where {N}
+    # TODO: check that head > tail
+    offset = atomic_add!(q.tail, one(N))
+    q.data[offset] = val
+    return offset
+end
+
+function t_popfirst!(q::ThreadQueue{T,N}) where {T} where {N}
+    # TODO: check that head < tail
+    offset = atomic_add!(q.head, one(N))
+    return q.data[offset]
+end
+
+function t_isempty(q::ThreadQueue{T,N}) where {T} where {N}
+    return (q.head[] == q.tail[]) && q.head != one(N)
+end
+
+function t_getindex(q::ThreadQueue{T}, iter) where {T}
+    return q.data[iter]
 end

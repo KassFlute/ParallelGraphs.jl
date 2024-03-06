@@ -1,4 +1,4 @@
-## Version with a ThreadQueue stolen from Graphs.jl
+## Version of a trhead-safe queue stolen from Graphs.jl
 
 """
     ThreadQueue
@@ -16,23 +16,23 @@ function ThreadQueue(T::Type, maxlength::N) where {N<:Integer}
     return q
 end
 
-function tpush!(q::ThreadQueue{T,N}, val::T) where {T} where {N}
+function t_push!(q::ThreadQueue{T,N}, val::T) where {T} where {N}
     # TODO: check that head > tail
     offset = atomic_add!(q.tail, one(N))
     q.data[offset] = val
     return offset
 end
 
-function tpopfirst!(q::ThreadQueue{T,N}) where {T} where {N}
+function t_popfirst!(q::ThreadQueue{T,N}) where {T} where {N}
     # TODO: check that head < tail
     offset = atomic_add!(q.head, one(N))
     return q.data[offset]
 end
 
-function tisempty(q::ThreadQueue{T,N}) where {T} where {N}
+function t_isempty(q::ThreadQueue{T,N}) where {T} where {N}
     return (q.head[] == q.tail[]) && q.head != one(N)
 end
 
-function tgetindex(q::ThreadQueue{T}, iter) where {T}
+function t_getindex(q::ThreadQueue{T}, iter) where {T}
     return q.data[iter]
 end
