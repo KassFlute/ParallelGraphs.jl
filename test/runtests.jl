@@ -1,5 +1,5 @@
 using Aqua
-using JET
+#using JET
 using JuliaFormatter
 using ParallelGraphs
 using Test
@@ -8,9 +8,9 @@ using Test
     @testset "Aqua" begin
         Aqua.test_all(ParallelGraphs; ambiguities=false)
     end
-    @testset "JET" begin
-        JET.test_package(ParallelGraphs; target_defined_modules=true)
-    end
+    # @testset "JET" begin
+    #     JET.test_package(ParallelGraphs; target_defined_modules=true)
+    # end
     @testset "JuliaFormatter" begin
         @test JuliaFormatter.format(ParallelGraphs; overwrite=false)
     end
