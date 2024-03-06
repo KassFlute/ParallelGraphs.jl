@@ -2,7 +2,7 @@ module ParallelGraphs
 
 using Graphs: vertices, edges, AbstractGraph, SimpleGraph, neighbors, add_edge!, nv
 #using OhMyThreads
-using Base.Threads: @threads, @atomicreplace, Atomic
+using Base.Threads: @threads, @atomicreplace, Atomic, atomic_add!
 
 include("fichier_bidon.jl")
 include("traversals/BFS/bfs_seq.jl")

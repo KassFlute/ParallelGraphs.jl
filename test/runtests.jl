@@ -28,13 +28,13 @@ using Test
             graph = SimpleGraph(adjacency_matrix)
 
             expected_order = [1, 2, 3, 4]
-            #@test bfs_seq(graph, 1) == expected_order
+            @test bfs_seq(graph, 1) == expected_order
             expected_order = [2, 1, 4, 3]
-            #@test bfs_seq(graph, 2) == expected_order
+            @test bfs_seq(graph, 2) == expected_order
             expected_order = [3, 1, 4, 2]
-            #@test bfs_seq(graph, 3) == expected_order
+            @test bfs_seq(graph, 3) == expected_order
             expected_order = [4, 2, 3, 1]
-            #@test bfs_seq(graph, 4) == expected_order
+            @test bfs_seq(graph, 4) == expected_order
         end
 
         @testset "BFS parallel" begin
@@ -47,13 +47,13 @@ using Test
             graph = SimpleGraph(adjacency_matrix)
 
             expected_order = [1, 2, 3, 4]
-            #@test bfs_par(graph, 1) == expected_order
+            @test bfs_par(graph, 1) == expected_order
             expected_order = [2, 1, 4, 3]
-            #@test bfs_par(graph, 2) == expected_order
+            @test bfs_par(graph, 2) == expected_order
             expected_order = [3, 1, 4, 2]
-            #@test bfs_par(graph, 3) == expected_order
+            @test bfs_par(graph, 3) == expected_order
             expected_order = [4, 2, 3, 1]
-            #@test bfs_par(graph, 4) == expected_order
+            @test bfs_par(graph, 4) == expected_order
         end
         @testset "BFS sequential Tree" begin
             adjacency_matrix = [
