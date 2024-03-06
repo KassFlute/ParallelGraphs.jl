@@ -77,7 +77,7 @@ end
 
 function bfs_par_tree(graph::AbstractGraph, source::Integer)
     queue = ThreadQueue{source}(nv(graph))
-    queue.push!(source)
+    push!(queue, source)
 
     parents[source] = source
 
@@ -86,7 +86,7 @@ function bfs_par_tree(graph::AbstractGraph, source::Integer)
         sources = queue.data[queue.head[]:queue.tail[]-1]
         @Threads for src in sources
             for n in neighbors(graph, src)
-                @atomicreplace parents[n] 0 => src && push!(queue) # If the parent is 0, replace it with src vertex and push to queue
+                @atomicreplace parents[n] 0 => src && push!(queue, n) # If the parent is 0, replace it with src vertex and push to queue
             end
         end
     end
@@ -94,7 +94,7 @@ function bfs_par_tree(graph::AbstractGraph, source::Integer)
     return parents
 end
 
-function bfs_par_tree(graph::AbstractGraph, source <: Integer)
+function bfs_par_tree(graph::AbstractGraph, source :: Integer)
     parents = zeros([source], nv(graph)) # Set of Parent vertices
     return bfs_par_tree!(graph, source, parents)
 end
