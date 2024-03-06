@@ -15,7 +15,7 @@ add_edge!(g, 4, 1)
 bfs_par(g, 1) # returns a vector containing all vertices in the order they were visited by all threads
 ```
 """
-function bfs_par(graph::AbstractGraph, source::Atomic{Int})
+function bfs_par(graph::AbstractGraph, source::Integer)
     queue = [source] # FIFO of vertices to visit
     visited = Set([source]) # Set of visited vertices
     visited_order = [source] # Order of visited vertices
@@ -35,21 +35,17 @@ function bfs_par(graph::AbstractGraph, source::Atomic{Int})
     return visited_order
 end
 
-
-
-
 function bfs_par_tree!(graph::AbstractGraph, source::Integer, parents::Array{Atomic{Int}})
     queue = ThreadQueue{source}(nv(graph))
     tpush!(queue, source)
 
     parents[source] = source
 
-
     while !tisempty(queue)
-        sources = queue.data[queue.head[]:queue.tail[]-1]
-        @Threads for src in sources
+        sources = queue.data[queue.head[]:(queue.tail[] - 1)]
+        @threads for src in sources
             for n in neighbors(graph, src)
-                @atomicreplace parents[n] 0 => src && tpush!(queue, n) # If the parent is 0, replace it with src vertex and push to queue
+                @atomicreplace parents[n].Val 0 => src && tpush!(queue, n) # If the parent is 0, replace it with src vertex and push to queue
             end
         end
     end
@@ -57,7 +53,7 @@ function bfs_par_tree!(graph::AbstractGraph, source::Integer, parents::Array{Ato
     return parents
 end
 
-function bfs_par_tree(graph::AbstractGraph, source :: Atomic{Int})
+function bfs_par_tree(graph::AbstractGraph, source::Atomic{Int})
     parents = zeros([source], nv(graph)) # Set of Parent vertices
     return bfs_par_tree!(graph, source, parents)
 end

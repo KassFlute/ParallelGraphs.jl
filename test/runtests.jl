@@ -9,7 +9,7 @@ using Test
         Aqua.test_all(ParallelGraphs; ambiguities=false)
     end
     # @testset "JET" begin
-        #     JET.test_package(ParallelGraphs; target_defined_modules=true)
+    #     JET.test_package(ParallelGraphs; target_defined_modules=true)
     # end
     @testset "JuliaFormatter" begin
         @test JuliaFormatter.format(ParallelGraphs; overwrite=false)
@@ -73,8 +73,6 @@ using Test
             expected_parents_2 = [2, 2, 4, 2]
             res = bfs_seq_tree(graph, 1)
             @test res == expected_parents_1 || res == expected_parents_2
-
-
         end
     end
 end
