@@ -27,6 +27,9 @@ const START_VERTEX = 1
 SUITE["BFS"]["bfs_seq"] = @benchmarkable bfs_seq(graph, START_VERTEX)
 SUITE["BFS"]["bfs_par"] = @benchmarkable bfs_par(graph, START_VERTEX)
 
+SUITE["BFS"]["bfs_seq_tree"] = @benchmarkable bfs_seq_tree(graph, START_VERTEX)
+SUITE["BFS"]["bfs_par_tree"] = @benchmarkable bfs_par_tree(graph, START_VERTEX)
+
 # If a cache of tuned parameters already exists, use it, otherwise, tune and cache
 # the benchmark parameters. Reusing cached parameters is faster and more reliable
 # than re-tuning `suite` every time the file is included.
