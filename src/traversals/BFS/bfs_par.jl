@@ -5,7 +5,7 @@ Run a parallel BFS traversal on a graph and return the parent vertices of each v
 
 See also: [bfs_par_tree](@ref)
 """
-function bfs_par_tree!(
+function bfs_par!(
     graph::AbstractGraph, source::T, parents::Array{Atomic{T}}
 ) where {T<:Integer}
     queue = ThreadQueue(T, nv(graph))
@@ -40,10 +40,10 @@ Run a parallel BFS traversal on a graph and return the parent vertices of each v
 
 See also: [bfs_par_tree!](@ref)
 """
-function bfs_par_tree(graph::AbstractGraph, source::T) where {T<:Integer}
+function bfs_par(graph::AbstractGraph, source::T) where {T<:Integer}
     #parents = Array{Atomic{T}}(0, nv(graph))
     parents_atomic = [Atomic{T}(0) for _ in 1:nv(graph)]
-    bfs_par_tree!(graph, source, parents_atomic)
+    bfs_par!(graph, source, parents_atomic)
     parents = [x[] for x in parents_atomic]
     return parents
 end

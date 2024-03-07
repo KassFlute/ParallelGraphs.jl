@@ -5,9 +5,7 @@ Run a sequential BFS traversal on a graph and return the parent vertices of each
 
 See also: [bfs_seq_tree](@ref)
 """
-function bfs_seq_tree!(
-    graph::AbstractGraph, source::T, parents::Array{T}
-) where {T<:Integer}
+function bfs_seq!(graph::AbstractGraph, source::T, parents::Array{T}) where {T<:Integer}
     queue::Vector{T} = Vector{T}(undef, 0) # FIFO of vertices to visit
     push!(queue, source)
 
@@ -34,10 +32,10 @@ Run a sequential BFS traversal on a graph and return the parent vertices of each
 
 See also: [bfs_seq_tree!](@ref)
 """
-function bfs_seq_tree(graph::AbstractGraph, source::T) where {T<:Integer}
+function bfs_seq(graph::AbstractGraph, source::T) where {T<:Integer}
     #parents = Array{T} # Set of Parent vertices
     parents = fill(0, nv(graph))
-    bfs_seq_tree!(graph, source, parents)
+    bfs_seq!(graph, source, parents)
     println("after call : ", parents)
     return parents
 end
