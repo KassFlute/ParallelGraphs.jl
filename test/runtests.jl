@@ -1,8 +1,10 @@
 using Aqua
 using JET
 using JuliaFormatter
-using ParallelGraphs
 using Test
+
+using ParallelGraphs
+using Graphs
 
 @testset verbose = true "ParallelGraphs.jl" begin
     @testset "Aqua" begin
