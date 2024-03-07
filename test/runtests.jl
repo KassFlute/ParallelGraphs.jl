@@ -137,7 +137,6 @@ using Test
 
             res = bfs_seq_tree(graph, 4)
             @test (res == expected_parents_1) ⊻ (res == expected_parents_2) # XOR to check that only one is true
-
         end
     end
 end
