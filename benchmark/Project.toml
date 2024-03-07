@@ -1,3 +1,4 @@
 [deps]
 BenchmarkTools = "6e4b80f9-dd63-53aa-95a3-0cdb28fa8baf"
+Graphs = "86223c79-3864-5bf0-83f7-82e725a168b6"
 ParallelGraphs = "4cdd4def-cb7e-45de-811d-e1afe4aa22cb"

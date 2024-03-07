@@ -1,41 +1,11 @@
 """
-    bfs_par(graph::AbstractGraph, source::Integer)
+    bfs_par_tree!(graph::AbstractGraph, source::T, parents::Array{Atomic{T}})
 
-Perform a breadth-first search on `graph` starting from vertex `source` in with multiple threads.
-Simplest OhMyThreads version -> create a new thread for each neighbot to visit.
-Return a vector of vertices in the order they were visited (by all threads!).
+Run a parallel BFS traversal on a graph and return the parent vertices of each vertex in the BFS tree in the given 'parents' Array.
 
-# Example
-```julia
-g = SimpleGraph(4)
-add_edge!(g, 1, 2)
-add_edge!(g, 2, 3)
-add_edge!(g, 3, 4)
-add_edge!(g, 4, 1)
-bfs_par(g, 1) # returns a vector containing all vertices in the order they were visited by all threads
-```
+See also: [bfs_par_tree](@ref)
 """
-function bfs_par(graph::AbstractGraph, source::T) where {T<:Integer}
-    queue = [source] # FIFO of vertices to visit
-    visited = Set([source]) # Set of visited vertices
-    visited_order = [source] # Order of visited vertices
-
-    while !isempty(queue)
-        v = popfirst!(queue)
-        ns = neighbors(graph, v)
-        @threads for n in ns
-            if !(n in visited)
-                push!(queue, n)
-                push!(visited_order, n)
-                push!(visited, n)
-            end
-        end
-    end
-
-    return visited_order
-end
-
-function bfs_par_tree!(
+function bfs_par!(
     graph::AbstractGraph, source::T, parents::Array{Atomic{T}}
 ) where {T<:Integer}
     queue = ThreadQueue(T, nv(graph))
@@ -63,10 +33,17 @@ function bfs_par_tree!(
     return parents
 end
 
-function bfs_par_tree(graph::AbstractGraph, source::T) where {T<:Integer}
+"""
+    bfs_par_tree(graph::AbstractGraph, source::T)
+
+Run a parallel BFS traversal on a graph and return the parent vertices of each vertex in the BFS tree in a new Array.
+
+See also: [bfs_par_tree!](@ref)
+"""
+function bfs_par(graph::AbstractGraph, source::T) where {T<:Integer}
     #parents = Array{Atomic{T}}(0, nv(graph))
     parents_atomic = [Atomic{T}(0) for _ in 1:nv(graph)]
-    bfs_par_tree!(graph, source, parents_atomic)
+    bfs_par!(graph, source, parents_atomic)
     parents = [x[] for x in parents_atomic]
     return parents
 end
