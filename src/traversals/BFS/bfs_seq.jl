@@ -61,6 +61,5 @@ function bfs_seq_tree(graph::AbstractGraph, source::T) where {T<:Integer}
     #parents = Array{T} # Set of Parent vertices
     parents = fill(0, nv(graph))
     bfs_seq_tree!(graph, source, parents)
-    println("after call : ", parents)
     return parents
 end
