@@ -3,7 +3,7 @@
 
 Run a parallel BFS traversal on a graph and return the parent vertices of each vertex in the BFS tree in the given 'parents' Array.
 
-See also: [bfs_par_tree](@ref)
+See also: [bfs_par](@ref)
 """
 function bfs_par!(
     graph::AbstractGraph, source::T, parents::Array{Atomic{T}}
@@ -38,7 +38,7 @@ end
 
 Run a parallel BFS traversal on a graph and return the parent vertices of each vertex in the BFS tree in a new Array.
 
-See also: [bfs_par_tree!](@ref)
+See also: [bfs_par!](@ref)
 """
 function bfs_par(graph::AbstractGraph, source::T) where {T<:Integer}
     #parents = Array{Atomic{T}}(0, nv(graph))
