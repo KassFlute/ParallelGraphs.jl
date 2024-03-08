@@ -36,6 +36,5 @@ function bfs_seq(graph::AbstractGraph, source::T) where {T<:Integer}
     #parents = Array{T} # Set of Parent vertices
     parents = fill(0, nv(graph))
     bfs_seq!(graph, source, parents)
-    println("after call : ", parents)
     return parents
 end
