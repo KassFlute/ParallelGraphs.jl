@@ -2,3 +2,5 @@
 # /docs/Manifest.toml
 /docs/build/
 .vscode/
+Q.md
+benchmark/params.json
