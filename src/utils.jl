@@ -1,4 +1,5 @@
 ## Version of a thread-safe queue stolen from Graphs.jl
+## TODO : implement a better queue using a binary heap for the priority queue
 
 """
     ThreadQueue
