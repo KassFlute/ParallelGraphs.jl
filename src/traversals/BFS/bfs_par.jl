@@ -8,6 +8,9 @@ See also: [bfs_par](@ref)
 function bfs_par!(
     graph::AbstractGraph, source::T, parents::Array{Atomic{T}}
 ) where {T<:Integer}
+    if source > nv(graph) || source < 1
+        throw(ArgumentError("source vertex is not in the graph"))
+    end
     queue = ThreadQueue(T, nv(graph))
     t_push!(queue, source)
 
@@ -41,7 +44,10 @@ Run a parallel BFS traversal on a graph and return the parent vertices of each v
 See also: [bfs_par!](@ref)
 """
 function bfs_par(graph::AbstractGraph, source::T) where {T<:Integer}
-    #parents = Array{Atomic{T}}(0, nv(graph))
+    if nv(graph) == 0
+        return []
+    end
+
     parents_atomic = [Atomic{T}(0) for _ in 1:nv(graph)]
     bfs_par!(graph, source, parents_atomic)
     parents = [x[] for x in parents_atomic]

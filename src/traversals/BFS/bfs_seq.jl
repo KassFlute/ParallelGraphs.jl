@@ -6,6 +6,13 @@ Run a sequential BFS traversal on a graph and return the parent vertices of each
 See also: [bfs_seq](@ref)
 """
 function bfs_seq!(graph::AbstractGraph, source::T, parents::Array{T}) where {T<:Integer}
+    if nv(graph) == 0
+        return parents
+    end
+    if source > nv(graph) || source < 1
+        throw(ArgumentError("source vertex is not in the graph"))
+    end
+
     queue::Vector{T} = Vector{T}(undef, 0) # FIFO of vertices to visit
     push!(queue, source)
 
@@ -22,7 +29,7 @@ function bfs_seq!(graph::AbstractGraph, source::T, parents::Array{T}) where {T<:
         end
     end
 
-    return parents
+    return nothing
 end
 
 """
@@ -34,6 +41,7 @@ See also: [bfs_seq!](@ref)
 """
 function bfs_seq(graph::AbstractGraph, source::T) where {T<:Integer}
     #parents = Array{T} # Set of Parent vertices
+
     parents = fill(0, nv(graph))
     bfs_seq!(graph, source, parents)
     return parents
