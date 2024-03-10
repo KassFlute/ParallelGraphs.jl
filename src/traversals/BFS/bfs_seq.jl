@@ -8,17 +8,17 @@ See also: [bfs_seq](@ref)
 """
 function bfs_seq!(graph::AbstractGraph, source::T, parents::Array{T}) where {T<:Integer}
     queue::Queue{T} = Queue{T}() # FIFO of vertices to visit
-    push!(queue, source)
+    enqueue!(queue, source)
 
     parents[source] = source
 
     while !isempty(queue)
-        src_v = popfirst!(queue)
+        src_v = dequeue!(queue)
         ns = neighbors(graph, src_v)
         for n in ns
             if parents[n] == 0
                 parents[n] = src_v
-                push!(queue, n)
+                enqueue!(queue, n)
             end
         end
     end
