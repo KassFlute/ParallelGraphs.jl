@@ -5,6 +5,7 @@ using Graphs:
     edges,
     AbstractGraph,
     SimpleGraph,
+    SimpleDiGraph,
     neighbors,
     add_edge!,
     nv,

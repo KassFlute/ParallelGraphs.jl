@@ -7,6 +7,13 @@ For correct results, the 'parents' Array should be initialized with zeros.
 See also: [bfs_seq](@ref)
 """
 function bfs_seq!(graph::AbstractGraph, source::T, parents::Array{T}) where {T<:Integer}
+    if nv(graph) == 0
+        return parents
+    end
+    if source > nv(graph) || source < 1
+        throw(ArgumentError("source vertex is not in the graph"))
+    end
+
     queue::Queue{T} = Queue{T}() # FIFO of vertices to visit
     enqueue!(queue, source)
 
@@ -22,6 +29,7 @@ function bfs_seq!(graph::AbstractGraph, source::T, parents::Array{T}) where {T<:
             end
         end
     end
+    return nothing
 end
 
 """
@@ -33,6 +41,7 @@ See also: [bfs_seq!](@ref)
 """
 function bfs_seq(graph::AbstractGraph, source::T) where {T<:Integer}
     #parents = Array{T} # Set of Parent vertices
+
     parents = fill(0, nv(graph))
     bfs_seq!(graph, source, parents)
     return parents

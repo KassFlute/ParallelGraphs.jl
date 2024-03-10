@@ -4,7 +4,6 @@ using Graphs: SimpleGraph, add_edge!, dorogovtsev_mendes
 
 SUITE = BenchmarkGroup()
 SUITE["rand"] = @benchmarkable rand(10)
-
 SUITE["BFS"] = BenchmarkGroup()
 
 # Function to generate a random graph with a given number of vertices and edges
@@ -18,16 +17,20 @@ function generate_random_graph(num_vertices::Int, num_edges::Int)
     return graph
 end
 
-# Generate a random graph with 10,000 vertices and 50,000 edges
+# Benchmark parameters
 const NUM_VERTICES = 10_000
 const NUM_EDGES = 50_000
-#graph = generate_random_graph(NUM_VERTICES, NUM_EDGES)
-graph = dorogovtsev_mendes(NUM_VERTICES)
 
-# Benchmark BFS
+# Generate random graphs
+graphs = [generate_random_graph(NUM_VERTICES, NUM_EDGES), dorogovtsev_mendes(NUM_VERTICES)]
+
+#####################
+### benchmark BFS ###
 const START_VERTEX = 1
-SUITE["BFS"]["bfs_seq"] = @benchmarkable bfs_seq(graph, START_VERTEX)
-SUITE["BFS"]["bfs_par"] = @benchmarkable bfs_par(graph, START_VERTEX)
+for g in graphs
+    SUITE["BFS"][string(g)][bfs_seq] = @benchmarkable bfs_seq($g, $START_VERTEX)
+    SUITE["BFS"][string(g)][bfs_par] = @benchmarkable bfs_par($g, $START_VERTEX)
+end
 
 # If a cache of tuned parameters already exists, use it, otherwise, tune and cache
 # the benchmark parameters. Reusing cached parameters is faster and more reliable
