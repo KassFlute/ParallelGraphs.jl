@@ -141,7 +141,7 @@ using Graphs
             correct = Set(14:29)
             counter = 0
             for i in 1:100
-                res = bfs_par_tree(graph, 1)[30]
+                res = bfs_par(graph, 1)[30]
                 histogram[res] += 1
                 if res in correct
                     counter += 1

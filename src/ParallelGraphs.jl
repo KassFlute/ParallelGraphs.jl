@@ -12,6 +12,7 @@ using Graphs:
 
 #using OhMyThreads
 using Base.Threads: @threads, @atomicreplace, Atomic, atomic_add!, atomic_cas!
+using DataStructures: Queue, push!, popfirst!, isempty
 
 include("fichier_bidon.jl")
 include("utils.jl")
