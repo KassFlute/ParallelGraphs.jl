@@ -126,7 +126,7 @@ using Graphs
             expected_parents_1 = [0, 0, 0, 4, 4, 5, 5, 7]
             expected_parents_2 = [0, 0, 0, 4, 4, 5, 5, 6]
 
-            res = bfs_seq(graph, 4)
+            res = bfs_par(graph, 4)
             @test (res == expected_parents_1) ⊻ (res == expected_parents_2) # XOR to check that only one is true
 
             # Lets make the results unpredictable
@@ -167,14 +167,17 @@ using Graphs
             histogram = zeros(Int, 30)
             correct = Set(14:29)
             counter = 0
+
             equality = true
             base_res = bfs_par(graph, 1)[30]
+
             for i in 1:100
                 res = bfs_par(graph, 1)[30]
                 histogram[res] += 1
                 if res in correct
                     counter += 1
                 end
+
                 equality = equality && res == base_res
             end
             #println(histogram) the results varies depending on execution, so multithreading is working
