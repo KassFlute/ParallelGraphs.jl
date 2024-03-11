@@ -167,7 +167,6 @@ using Graphs
             histogram = zeros(Int, 30)
             correct = Set(14:29)
             counter = 0
-
             equality = true
             base_res = bfs_par(graph, 1)[30]
 
@@ -177,7 +176,6 @@ using Graphs
                 if res in correct
                     counter += 1
                 end
-
                 equality = equality && res == base_res
             end
             #println(histogram) the results varies depending on execution, so multithreading is working
@@ -224,7 +222,7 @@ using Graphs
                 ]
                 graph = SimpleDiGraph(adjacency_matrix)
                 res = bfs_par(graph, 1)
-                println(res)
+
                 expected_parents_1 = [1, 1, 2, 3, 4, 5, 6, 4, 8, 9, 7, 10, 0, 7]
                 expected_parents_2 = [1, 1, 2, 3, 4, 5, 6, 4, 8, 9, 10, 10, 0, 7]
                 @test (res == expected_parents_1) ⊻ (res == expected_parents_2)
