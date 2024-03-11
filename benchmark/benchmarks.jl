@@ -22,21 +22,17 @@ const NUM_VERTICES = 10_000
 const NUM_EDGES = 50_000
 
 # Generate random graphs
-graphs = [
-    generate_random_graph(NUM_VERTICES, NUM_EDGES),
-    dorogovtsev_mendes(NUM_VERTICES)
-]
+graphs = [generate_random_graph(NUM_VERTICES, NUM_EDGES), dorogovtsev_mendes(NUM_VERTICES)]
+names = ["random", "dorogovtsev_mendes"]
 
 #####################
 ### benchmark BFS ###
 const START_VERTEX = 1
-for g in graphs
-    SUITE["BFS"][string(g)][bfs_seq] = @benchmarkable bfs_seq($g, $START_VERTEX)
-    SUITE["BFS"][string(g)][bfs_par] = @benchmarkable bfs_par($g, $START_VERTEX)
+for i in eachindex(graphs)
+    g = graphs[i]
+    SUITE["BFS"][names[i]][bfs_seq] = @benchmarkable bfs_seq($g, $START_VERTEX)
+    SUITE["BFS"][names[i]][bfs_par] = @benchmarkable bfs_par($g, $START_VERTEX)
 end
-
-
-
 
 # If a cache of tuned parameters already exists, use it, otherwise, tune and cache
 # the benchmark parameters. Reusing cached parameters is faster and more reliable
