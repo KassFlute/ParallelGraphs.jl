@@ -5,6 +5,7 @@ using Graphs:
     edges,
     AbstractGraph,
     SimpleGraph,
+    SimpleDiGraph,
     neighbors,
     add_edge!,
     nv,
@@ -12,6 +13,7 @@ using Graphs:
 
 #using OhMyThreads
 using Base.Threads: @threads, @atomicreplace, Atomic, atomic_add!, atomic_cas!
+using DataStructures: Queue, isempty, enqueue!, dequeue!, push!
 
 include("fichier_bidon.jl")
 include("utils.jl")

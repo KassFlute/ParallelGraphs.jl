@@ -20,6 +20,12 @@ using Graphs
         @test return_true() == true
         @test return_false() == false
 
+        @testset "Empty graph" begin
+            graph = SimpleGraph(0)
+            @test bfs_seq(graph, 0) == []
+            @test bfs_par(graph, 0) == []
+        end
+
         @testset "BFS sequential" begin
             # On a simple graph
             adjacency_matrix = [
@@ -58,6 +64,26 @@ using Graphs
             expected_parents_1 = [0, 0, 0, 5, 5, 5]
             res = bfs_seq(graph, 5)
             @test res == expected_parents_1
+
+            @testset "Directed Graphs" begin
+
+                # On a simple directed graph
+                adjacency_matrix = [
+                    0 1 0 0
+                    0 0 1 0
+                    0 0 0 1
+                    0 1 0 0
+                ]
+                graph = SimpleDiGraph(adjacency_matrix)
+
+                expected_parents_1 = [1, 1, 2, 3]
+                res = bfs_seq(graph, 1)
+                @test res == expected_parents_1
+
+                expected_parents_1 = [0, 2, 2, 3]
+                res = bfs_seq(graph, 2)
+                @test res == expected_parents_1
+            end
         end
 
         @testset "BFS Parallel" begin
@@ -100,7 +126,7 @@ using Graphs
             expected_parents_1 = [0, 0, 0, 4, 4, 5, 5, 7]
             expected_parents_2 = [0, 0, 0, 4, 4, 5, 5, 6]
 
-            res = bfs_seq(graph, 4)
+            res = bfs_par(graph, 4)
             @test (res == expected_parents_1) ⊻ (res == expected_parents_2) # XOR to check that only one is true
 
             # Lets make the results unpredictable
@@ -143,6 +169,7 @@ using Graphs
             counter = 0
             equality = true
             base_res = bfs_par(graph, 1)[30]
+
             for i in 1:100
                 res = bfs_par(graph, 1)[30]
                 histogram[res] += 1
@@ -195,7 +222,7 @@ using Graphs
                 ]
                 graph = SimpleDiGraph(adjacency_matrix)
                 res = bfs_par(graph, 1)
-                #println(res)
+
                 expected_parents_1 = [1, 1, 2, 3, 4, 5, 6, 4, 8, 9, 7, 10, 0, 7]
                 expected_parents_2 = [1, 1, 2, 3, 4, 5, 6, 4, 8, 9, 10, 10, 0, 7]
                 @test (res == expected_parents_1) ⊻ (res == expected_parents_2)

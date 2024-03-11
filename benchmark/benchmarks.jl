@@ -25,6 +25,7 @@ const NUM_EDGES = 50_000
 graphs = [generate_random_graph(NUM_VERTICES, NUM_EDGES), dorogovtsev_mendes(NUM_VERTICES)]
 names = ["random", "dorogovtsev_mendes"]
 
+
 #####################
 ### benchmark BFS ###
 const START_VERTEX = 1
