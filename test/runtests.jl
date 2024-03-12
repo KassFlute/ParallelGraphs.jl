@@ -20,12 +20,6 @@ using Graphs
         @test return_true() == true
         @test return_false() == false
 
-        @testset "Empty graph" begin
-            graph = SimpleGraph(0)
-            @test bfs_seq(graph, 0) == []
-            @test bfs_par(graph, 0) == []
-        end
-
         @testset "BFS sequential" begin
             @testset "Undirected graph" begin
                 # Empty graph
@@ -245,6 +239,45 @@ using Graphs
                 expected_parents_2 = [1, 1, 2, 3, 4, 5, 6, 4, 8, 9, 10, 10, 0, 7]
                 @test (res == expected_parents_1) ⊻ (res == expected_parents_2)
             end
+        end
+
+        @testset "utils" begin
+            # t_push!
+            q = ThreadQueue{Int,Int}(Int, 5)
+            @test isempty(q)
+
+            t_push!(q, 1)
+            @test !isempty(q)
+            @test t_getindex(q, 1) == 1
+
+            t_push!(q, 2)
+            t_push!(q, 3)
+            t_push!(q, 4)
+            t_push!(q, 5)
+
+            @test_throws MethodError t_push!(q, 6) # Queue is full
+
+            # t_popfirst!
+            q = ThreadQueue{Int,Int}(Int, 5)
+            t_push!(q, 1)
+            t_push!(q, 2)
+            t_push!(q, 3)
+
+            @test t_popfirst!(q) == 1
+            @test t_popfirst!(q) == 2
+            @test t_popfirst!(q) == 3
+
+            @test_throws BoundsError t_popfirst!(q) # Queue is empty
+
+            # t_isempty
+            q = ThreadQueue{Int,Int}(Int, 5)
+            @test t_isempty(q)
+
+            t_push!(q, 1)
+            @test !t_isempty(q)
+
+            t_popfirst!(q)
+            @test t_isempty(q)
         end
     end
 end
