@@ -243,41 +243,41 @@ using Graphs
 
         @testset "utils" begin
             # t_push!
-            q = ThreadQueue{Int,Int}(Int, 5)
-            @test isempty(q)
+            q = ParallelGraphs.ThreadQueue(Int, 5)
+            @test ParallelGraphs.t_isempty(q)
 
-            t_push!(q, 1)
-            @test !isempty(q)
-            @test t_getindex(q, 1) == 1
+            ParallelGraphs.t_push!(q, 1)
+            @test !ParallelGraphs.t_isempty(q)
+            @test ParallelGraphs.t_getindex(q, 1) == 1
 
-            t_push!(q, 2)
-            t_push!(q, 3)
-            t_push!(q, 4)
-            t_push!(q, 5)
+            ParallelGraphs.t_push!(q, 2)
+            ParallelGraphs.t_push!(q, 3)
+            ParallelGraphs.t_push!(q, 4)
+            ParallelGraphs.t_push!(q, 5)
 
-            @test_throws MethodError t_push!(q, 6) # Queue is full
+            @test_throws MethodError ParallelGraphs.t_push!(q, 6) # Queue is full
 
             # t_popfirst!
-            q = ThreadQueue{Int,Int}(Int, 5)
-            t_push!(q, 1)
-            t_push!(q, 2)
-            t_push!(q, 3)
+            q = ParallelGraphs.ThreadQueue(Int, 5)
+            ParallelGraphs.t_push!(q, 1)
+            ParallelGraphs.t_push!(q, 2)
+            ParallelGraphs.t_push!(q, 3)
 
-            @test t_popfirst!(q) == 1
-            @test t_popfirst!(q) == 2
-            @test t_popfirst!(q) == 3
+            @test ParallelGraphs.t_popfirst!(q) == 1
+            @test ParallelGraphs.t_popfirst!(q) == 2
+            @test ParallelGraphs.t_popfirst!(q) == 3
 
-            @test_throws BoundsError t_popfirst!(q) # Queue is empty
+            @test_throws BoundsError ParallelGraphs.t_popfirst!(q) # Queue is empty
 
             # t_isempty
-            q = ThreadQueue{Int,Int}(Int, 5)
-            @test t_isempty(q)
+            q = ParallelGraphs.ThreadQueue(Int, 5)
+            @test ParallelGraphs.t_isempty(q)
 
-            t_push!(q, 1)
-            @test !t_isempty(q)
+            ParallelGraphs.t_push!(q, 1)
+            @test !ParallelGraphs.t_isempty(q)
 
-            t_popfirst!(q)
-            @test t_isempty(q)
+            ParallelGraphs.t_popfirst!(q)
+            @test ParallelGraphs.t_isempty(q)
         end
     end
 end
