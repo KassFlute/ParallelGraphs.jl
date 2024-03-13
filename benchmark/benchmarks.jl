@@ -6,7 +6,11 @@ SUITE = BenchmarkGroup()
 SUITE["rand"] = @benchmarkable rand(10)
 SUITE["BFS"] = BenchmarkGroup()
 
-@warn "Julia started with: $(Threads.nthreads()) threads"
+if Threads.nthreads() == 1
+    @warn "Julia started with: $(Threads.nthreads()) threads, consider starting Julia with more threads to benchmark parallel code: `julia -t auto`."
+else
+    @waen "Julia started with: $(Threads.nthreads()) threads."
+end
 
 # Function to generate a random graph with a given number of vertices and edges
 function generate_random_graph(num_vertices::Int, num_edges::Int)
