@@ -40,8 +40,6 @@ for i in eachindex(graphs)
     SUITE["BFS"][names[i]][bfs_par] = @benchmarkable bfs_par($g, $START_VERTEX) evals = 1
 end
 
-
-
 # If a cache of tuned parameters already exists, use it, otherwise, tune and cache
 # the benchmark parameters. Reusing cached parameters is faster and more reliable
 # than re-tuning `suite` every time the file is included.
