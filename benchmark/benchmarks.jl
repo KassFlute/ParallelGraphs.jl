@@ -9,7 +9,7 @@ SUITE["BFS"] = BenchmarkGroup()
 if Threads.nthreads() == 1
     @warn "Julia started with: $(Threads.nthreads()) threads, consider starting Julia with more threads to benchmark parallel code: `julia -t auto`."
 else
-    @waen "Julia started with: $(Threads.nthreads()) threads."
+    @warn "Julia started with: $(Threads.nthreads()) threads."
 end
 
 # Function to generate a random graph with a given number of vertices and edges
@@ -36,18 +36,21 @@ names = ["random", "dorogovtsev_mendes"]
 const START_VERTEX = 1
 for i in eachindex(graphs)
     g = graphs[i]
-    SUITE["BFS"][names[i]][bfs_seq] = @benchmarkable bfs_seq($g, $START_VERTEX)
-    SUITE["BFS"][names[i]][bfs_par] = @benchmarkable bfs_par($g, $START_VERTEX)
+    SUITE["BFS"][names[i]][bfs_seq] = @benchmarkable bfs_seq($g, $START_VERTEX) evals = 1
+    SUITE["BFS"][names[i]][bfs_par] = @benchmarkable bfs_par($g, $START_VERTEX) evals = 1
 end
+
+
 
 # If a cache of tuned parameters already exists, use it, otherwise, tune and cache
 # the benchmark parameters. Reusing cached parameters is faster and more reliable
 # than re-tuning `suite` every time the file is included.
-paramspath = joinpath(dirname(@__FILE__), "params.json")
 
-if isfile(paramspath)
-    loadparams!(SUITE, BenchmarkTools.load(paramspath)[1], :evals)
-else
-    tune!(SUITE)
-    BenchmarkTools.save(paramspath, params(SUITE))
-end
+# paramspath = joinpath(dirname(@__FILE__), "params.json")
+
+# if isfile(paramspath)
+#     loadparams!(SUITE, BenchmarkTools.load(paramspath)[1], :evals)
+# else
+#     tune!(SUITE)
+#     BenchmarkTools.save(paramspath, params(SUITE))
+# end
