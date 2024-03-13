@@ -22,11 +22,11 @@ using Graphs
 
         @testset "BFS sequential" begin
             @testset "Undirected graph" begin
-                # Empty graph
+                ### Empty graph ###
                 graph = SimpleGraph(0)
                 @test bfs_seq(graph, 0) == []
 
-                # Basic undirected graph
+                ### Basic undirected graph ###
                 adjacency_matrix = [
                     0 1 1 0
                     1 0 0 1
@@ -35,17 +35,24 @@ using Graphs
                 ]
                 graph = SimpleGraph(adjacency_matrix)
 
+                # correct from source 1
                 expected_parents_1 = [1, 1, 1, 2]
                 expected_parents_2 = [1, 1, 1, 3]
                 res = bfs_seq(graph, 1)
                 @test res == expected_parents_1 || res == expected_parents_2
 
+                # correct from source 2
                 expected_parents_1 = [2, 2, 1, 2]
                 expected_parents_2 = [2, 2, 4, 2]
                 res = bfs_seq(graph, 2)
                 @test res == expected_parents_1 || res == expected_parents_2
 
-                # Not-connected graph
+                # invalid source
+                @test_throws ArgumentError bfs_seq(graph, 0)
+                @test_throws ArgumentError bfs_seq(graph, -1)
+                @test_throws ArgumentError bfs_seq(graph, 5)
+
+                ### Not-connected graph ###
                 adjacency_matrix = [
                     0 1 0 0 0 0
                     1 0 1 0 0 0
@@ -56,10 +63,12 @@ using Graphs
                 ]
                 graph = SimpleGraph(adjacency_matrix)
 
+                # correct from source 1
                 expected_parents_1 = [1, 1, 2, 0, 0, 0]
                 res = bfs_seq(graph, 1)
                 @test res == expected_parents_1
 
+                # correct from source 5
                 expected_parents_1 = [0, 0, 0, 5, 5, 5]
                 res = bfs_seq(graph, 5)
                 @test res == expected_parents_1
@@ -91,11 +100,11 @@ using Graphs
 
         @testset "BFS Parallel" begin
             @testset "Undirected graph" begin
-                # Empty graph
+                ### Empty graph ###
                 graph = SimpleGraph(0)
                 @test bfs_par(graph, 0) == []
 
-                # Basic undirected graph
+                ### Basic undirected graph ###
                 adjacency_matrix = [
                     0 1 1 0
                     1 0 0 1
@@ -104,17 +113,24 @@ using Graphs
                 ]
                 graph = SimpleGraph(adjacency_matrix)
 
+                # correct from source 1
                 expected_parents_1 = [1, 1, 1, 2]
                 expected_parents_2 = [1, 1, 1, 3]
                 res = bfs_par(graph, 1)
                 @test res == expected_parents_1 || res == expected_parents_2
 
+                # correct from source 2
                 expected_parents_1 = [2, 2, 1, 2]
                 expected_parents_2 = [2, 2, 4, 2]
                 res = bfs_par(graph, 2)
                 @test res == expected_parents_1 || res == expected_parents_2
 
-                # Not-connected graph
+                # invalid source
+                @test_throws ArgumentError bfs_par(graph, 0)
+                @test_throws ArgumentError bfs_par(graph, -1)
+                @test_throws ArgumentError bfs_par(graph, 5)
+
+                ### Not-connected graph ###
                 adjacency_matrix = [
                     0 1 0 0 0 0 0 0
                     1 0 1 0 0 0 0 0
@@ -127,17 +143,18 @@ using Graphs
                 ]
                 graph = SimpleGraph(adjacency_matrix)
 
+                # correct from source 1
                 expected_parents_1 = [1, 1, 2, 0, 0, 0, 0, 0]
                 res = bfs_seq(graph, 1)
                 @test res == expected_parents_1
 
+                # correct from source 4
                 expected_parents_1 = [0, 0, 0, 4, 4, 5, 5, 7]
                 expected_parents_2 = [0, 0, 0, 4, 4, 5, 5, 6]
-
                 res = bfs_par(graph, 4)
                 @test (res == expected_parents_1) ⊻ (res == expected_parents_2) # XOR to check that only one is true
 
-                # Complicated undirected graph
+                ### Complicated undirected graph ###
                 adjacency_matrix = [
                     0 1 1 1 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
                     1 0 0 0 0 0 0 0 0 0 0 1 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
@@ -172,6 +189,7 @@ using Graphs
                 ]
                 graph = SimpleGraph(adjacency_matrix)
 
+                # correct and effectively parallel from source 1
                 histogram = zeros(Int, 30)
                 correct = Set(14:29)
                 counter = 0
@@ -186,7 +204,7 @@ using Graphs
                     end
                     equality = equality && res == base_res
                 end
-                #println(histogram) the results varies depending on execution, so multithreading is working
+                # The results varies depending on execution, so multithreading is working
                 @test counter == 100
                 if equality
                     @warn "Some results that should be unpredictable are always identical. Test environnement is probably not configured correctly for multi-threading"
@@ -194,11 +212,11 @@ using Graphs
             end
 
             @testset "Directed Graphs" begin
-                # Empty graph
+                ###  Empty graph ###
                 graph = SimpleDiGraph(0)
                 @test bfs_par(graph, 0) == []
 
-                # Simple directed graph
+                ### Simple directed graph ###
                 adjacency_matrix = [
                     0 1 0 0
                     0 0 1 0
@@ -207,15 +225,17 @@ using Graphs
                 ]
                 graph = SimpleDiGraph(adjacency_matrix)
 
+                # correct from source 1
                 expected_parents_1 = [1, 1, 2, 3]
                 res = bfs_par(graph, 1)
                 @test res == expected_parents_1
 
+                # correct from source 2
                 expected_parents_1 = [0, 2, 2, 3]
                 res = bfs_par(graph, 2)
                 @test res == expected_parents_1
 
-                # More complicated directed graph
+                ### More complicated directed graph ###
                 adjacency_matrix = [
                     0 1 0 0 0 0 0 0 0 0 0 0 0 0
                     0 0 1 0 0 0 0 0 0 0 0 0 0 0
@@ -235,6 +255,7 @@ using Graphs
                 graph = SimpleDiGraph(adjacency_matrix)
                 res = bfs_par(graph, 1)
 
+                # correct from source 1
                 expected_parents_1 = [1, 1, 2, 3, 4, 5, 6, 4, 8, 9, 7, 10, 0, 7]
                 expected_parents_2 = [1, 1, 2, 3, 4, 5, 6, 4, 8, 9, 10, 10, 0, 7]
                 @test (res == expected_parents_1) ⊻ (res == expected_parents_2)
