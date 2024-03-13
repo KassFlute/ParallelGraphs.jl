@@ -6,6 +6,8 @@ SUITE = BenchmarkGroup()
 SUITE["rand"] = @benchmarkable rand(10)
 SUITE["BFS"] = BenchmarkGroup()
 
+@warn "Julia started with: $(Threads.nthreads()) threads"
+
 # Function to generate a random graph with a given number of vertices and edges
 function generate_random_graph(num_vertices::Int, num_edges::Int)
     graph = SimpleGraph(num_vertices)
