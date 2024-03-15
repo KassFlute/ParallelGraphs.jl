@@ -17,9 +17,6 @@ using Graphs
         @test JuliaFormatter.format(ParallelGraphs; overwrite=false)
     end
     @testset "Actual tests" begin
-        @test return_true() == true
-        @test return_false() == false
-
         @testset "BFS sequential" begin
             @testset "Undirected graph" begin
                 ### Empty graph ###

@@ -20,8 +20,7 @@ function bfs_par!(
         sources = queue.data[queue.head[]:(queue.tail[] - 1)]
         queue.head[] = queue.tail[]
         @threads for src in sources
-            @threads for n in neighbors(graph, src)
-
+            for n in neighbors(graph, src)
                 #(@atomicreplace parents[n] 0 => src).success && t_push!(queue, n) 
                 # If the parent is 0, replace it with src vertex and push to queue
                 old_val = atomic_cas!(parents[n], 0, src)
@@ -33,7 +32,7 @@ function bfs_par!(
     end
 
     #return Array{T}(parents) TODO : find a way to efficiently convert Array{Atomic{T}} to Array{T}
-    return parents
+    return nothing
 end
 
 """
@@ -45,7 +44,7 @@ See also: [bfs_par!](@ref)
 """
 function bfs_par(graph::AbstractGraph, source::T) where {T<:Integer}
     if nv(graph) == 0
-        return []
+        return T[]
     end
 
     parents_atomic = [Atomic{T}(0) for _ in 1:nv(graph)]
