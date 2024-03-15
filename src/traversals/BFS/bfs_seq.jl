@@ -13,16 +13,14 @@ function bfs_seq!(graph::AbstractGraph, source::T, parents::Array{T}) where {T<:
     if source > nv(graph) || source < 1
         throw(ArgumentError("source vertex is not in the graph"))
     end
-
-    queue::Queue{T} = Queue{T}() # FIFO of vertices to visit
+    queue = Queue{T}() # FIFO of vertices to visit
     enqueue!(queue, source)
 
     parents[source] = source
 
     while !isempty(queue)
         src_v = dequeue!(queue)
-        ns = neighbors(graph, src_v)
-        for n in ns
+        for n in neighbors(graph, src_v)
             if parents[n] == 0
                 parents[n] = src_v
                 enqueue!(queue, n)
