@@ -19,6 +19,6 @@ include("utils.jl")
 include("traversals/BFS/bfs_seq.jl")
 include("traversals/BFS/bfs_par.jl")
 
-export return_true, return_false, bfs_seq, bfs_par
+export bfs_seq, bfs_par
 
 end
