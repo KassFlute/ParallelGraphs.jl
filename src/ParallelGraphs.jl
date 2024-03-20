@@ -12,8 +12,9 @@ using Graphs:
     dorogovtsev_mendes
 
 #using OhMyThreads
-using Base.Threads: @threads, @atomicreplace, Atomic, atomic_add!, atomic_cas!
+using Base.Threads: @threads, @spawn, @atomicreplace, Atomic, atomic_add!, atomic_cas!
 using DataStructures: Queue, isempty, enqueue!, dequeue!, push!
+using OhMyThreads: tforeach
 
 include("utils.jl")
 include("traversals/BFS/bfs_seq.jl")
