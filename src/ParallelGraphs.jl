@@ -11,7 +11,6 @@ using Graphs:
     nv,
     dorogovtsev_mendes
 
-#using OhMyThreads
 using Base.Threads: @threads, @spawn, @atomicreplace, Atomic, atomic_add!, atomic_cas!
 using DataStructures: Queue, isempty, enqueue!, dequeue!, push!
 using OhMyThreads: tforeach
@@ -20,6 +19,6 @@ include("utils.jl")
 include("traversals/BFS/bfs_seq.jl")
 include("traversals/BFS/bfs_par.jl")
 
-export bfs_seq, bfs_par, bfs_par_local3!, bfs_par_local2!, bfs_par_local!
+export bfs_seq, bfs_par, bfs_seq!, bfs_par!, bfs_par_local!, bfs_par_local_unsafe!, bfs_par_local_probably_slower!
 
 end

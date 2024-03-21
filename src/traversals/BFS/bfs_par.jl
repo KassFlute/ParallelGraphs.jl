@@ -36,7 +36,7 @@ function bfs_par!(
     return nothing
 end
 
-function bfs_par_local!(
+function bfs_par_local_unsafe!(
     graph::AbstractGraph, source::T, parents::Array{Atomic{T}}, queues::Vector{Queue{T}}
 ) where {T<:Integer}
     if source > nv(graph) || source < 1
@@ -69,7 +69,7 @@ function bfs_par_local!(
     end
 end
 
-function bfs_par_local2!(
+function bfs_par_local!(
     graph::AbstractGraph, source::T, parents::Array{Atomic{T}}, queues::Channel{Queue{T}}
 ) where {T<:Integer}
     if source > nv(graph) || source < 1
@@ -106,7 +106,7 @@ function bfs_par_local2!(
     return nothing
 end
 
-function bfs_par_local3!(
+function bfs_par_local_probably_slower!(
     graph::AbstractGraph, source::T, parents::Array{Atomic{T}}, chnl::Channel{T}
 ) where {T<:Integer}
     if source > nv(graph) || source < 1
