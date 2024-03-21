@@ -151,13 +151,7 @@ function bfs_par_local3!(
     return nothing
 end
 
-"""
-    bfs_par_tree(graph::AbstractGraph, source::T)
 
-Run a parallel BFS traversal on a graph and return the parent vertices of each vertex in the BFS tree in a new Array.
-
-See also: [bfs_par!](@ref)
-"""
 #function bfs_par(graph::AbstractGraph, source::T) where {T<:Integer}
 #    if nv(graph) == 0
 #        return T[]
@@ -174,6 +168,13 @@ See also: [bfs_par!](@ref)
 #    return parents
 #end
 
+"""
+    bfs_par_tree(graph::AbstractGraph, source::T)
+
+Run a parallel BFS traversal on a graph and return the parent vertices of each vertex in the BFS tree in a new Array.
+
+See also: [bfs_par!](@ref)
+"""
 function bfs_par(graph::AbstractGraph, source::T) where {T<:Integer}
     if nv(graph) == 0
         return T[]
