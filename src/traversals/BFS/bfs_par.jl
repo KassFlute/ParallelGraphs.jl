@@ -37,8 +37,7 @@ function bfs_par!(
 end
 
 function bfs_par_local!(
-graph::AbstractGraph, source::T, parents::Array{Atomic{T}}, queues::Vector{Queue{T}}
-      
+    graph::AbstractGraph, source::T, parents::Array{Atomic{T}}, queues::Vector{Queue{T}}
 ) where {T<:Integer}
     if source > nv(graph) || source < 1
         throw(ArgumentError("source vertex is not in the graph"))
