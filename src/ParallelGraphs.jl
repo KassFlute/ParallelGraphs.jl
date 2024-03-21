@@ -19,6 +19,12 @@ include("utils.jl")
 include("traversals/BFS/bfs_seq.jl")
 include("traversals/BFS/bfs_par.jl")
 
-export bfs_seq, bfs_par, bfs_seq!, bfs_par!, bfs_par_local!, bfs_par_local_unsafe!, bfs_par_local_probably_slower!
+export bfs_seq,
+    bfs_par,
+    bfs_seq!,
+    bfs_par!,
+    bfs_par_local!,
+    bfs_par_local_unsafe!,
+    bfs_par_local_probably_slower!
 
 end
