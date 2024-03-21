@@ -52,8 +52,8 @@ function bfs_par_local!(
             end
         end
 
-        to_visit = Vector{T}()
-        push!(to_visit, source)
+            to_visit = Vector{T}()
+            push!(to_visit, source)
 
         parents[source] = Atomic{Int}(source)
         while !isempty(to_visit)
@@ -153,7 +153,7 @@ function bfs_par(graph::AbstractGraph, source::T) where {T<:Integer}
         put!(queues, Queue{T}())
     end
     parents_atomic = [Atomic{T}(0) for _ in 1:nv(graph)]
-    bfs_par_local2!(graph, source, parents_atomic, queues)
+    bfs_par_local!(graph, source, parents_atomic, queues)
 
     parents = Array{T}(undef, length(parents_atomic))
     parents = [x[] for x in parents_atomic]
