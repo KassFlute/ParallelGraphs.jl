@@ -151,7 +151,6 @@ function bfs_par_local3!(
     return nothing
 end
 
-
 #function bfs_par(graph::AbstractGraph, source::T) where {T<:Integer}
 #    if nv(graph) == 0
 #        return T[]
