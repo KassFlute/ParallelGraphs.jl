@@ -35,6 +35,12 @@ graphs = [
     barabasi_albert(NUM_VERTICES, 5_000),
 ]
 names = ["random", "dorogovtsev_mendes", "barabasi_albert"]
+graphs = [
+    generate_random_graph(NUM_VERTICES, NUM_EDGES),
+    dorogovtsev_mendes(NUM_VERTICES),
+    barabasi_albert(NUM_VERTICES, 5_000),
+]
+names = ["random", "dorogovtsev_mendes", "barabasi_albert"]
 
 #####################
 ### benchmark BFS ###
@@ -45,10 +51,10 @@ for i in eachindex(graphs)
     parents_atomic = [Atomic{Int}(0) for _ in 1:nv(g)]
     SUITE["BFS"][names[i]][bfs_seq] = @benchmarkable ParallelGraphs.bfs_seq!(
         $g, $START_VERTEX, $parents
-    ) evals = 1
+    ) evals = 1 setup = (parents_prepared = fill(0, nv($g)))
     SUITE["BFS"][names[i]][bfs_par] = @benchmarkable ParallelGraphs.bfs_par!(
         $g, $START_VERTEX, $parents_atomic
-    ) evals = 1
+    ) evals = 1 setup = (parents_atomic_prepared = [Atomic{Int}(0) for _ in 1:nv($g)])
 end
 
 # SUITE["BFS"]["random"][bfs_par] = @benchmarkable ParallelGraphs.bfs_par!(
