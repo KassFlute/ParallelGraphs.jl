@@ -84,6 +84,9 @@ function bfs_par_local!(
                 q = take!(queues)
                 enqueue!(q, n)
                 put!(queues, q)
+                q = take!(queues)
+                enqueue!(q, n)
+                put!(queues, q)
             end
         end
     end
