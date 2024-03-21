@@ -1,6 +1,6 @@
 using ParallelGraphs
 using BenchmarkTools
-using Graphs: SimpleGraph, add_edge!, dorogovtsev_mendes, nv
+using Graphs: SimpleGraph, add_edge!, dorogovtsev_mendes, barabasi_albert, nv
 using Base.Threads: Atomic
 
 SUITE = BenchmarkGroup()
@@ -29,8 +29,12 @@ const NUM_VERTICES = 10_000
 const NUM_EDGES = 50_000
 
 # Generate random graphs
-graphs = [generate_random_graph(NUM_VERTICES, NUM_EDGES), dorogovtsev_mendes(NUM_VERTICES)]
-names = ["random", "dorogovtsev_mendes"]
+graphs = [
+    generate_random_graph(NUM_VERTICES, NUM_EDGES),
+    dorogovtsev_mendes(NUM_VERTICES),
+    barabasi_albert(NUM_VERTICES, 5_000),
+]
+names = ["random", "dorogovtsev_mendes", "barabasi_albert"]
 
 #####################
 ### benchmark BFS ###
@@ -40,12 +44,19 @@ for i in eachindex(graphs)
     parents = fill(0, nv(g))
     parents_atomic = [Atomic{Int}(0) for _ in 1:nv(g)]
     SUITE["BFS"][names[i]][bfs_seq] = @benchmarkable ParallelGraphs.bfs_seq!(
-        $g, $START_VERTEX, $parent
+        $g, $START_VERTEX, $parents
     ) evals = 1
     SUITE["BFS"][names[i]][bfs_par] = @benchmarkable ParallelGraphs.bfs_par!(
         $g, $START_VERTEX, $parents_atomic
     ) evals = 1
 end
+
+# SUITE["BFS"]["random"][bfs_par] = @benchmarkable ParallelGraphs.bfs_par!(
+#     $g, $START_VERTEX, $parents_atomic
+# ) evals = 1
+# SUITE["BFS"]["random"][bfs_par] = @benchmarkable ParallelGraphs.bfs_par!(
+#     $g, $START_VERTEX, parents_atomic_prepared
+# ) evals = 1 setup = (parents_atomic_prepared = [Atomic{Int}(0) for _ in 1:nv($g)])
 
 # If a cache of tuned parameters already exists, use it, otherwise, tune and cache
 # the benchmark parameters. Reusing cached parameters is faster and more reliable
