@@ -52,30 +52,31 @@ function bfs_par_local!(
             end
         end
 
-    function local_exploration!(src::T) where {T<:Integer}
-        for n in neighbors(graph, src)
-            # If the parent is 0, replace it with src vertex and push to queue
-            old_val = atomic_cas!(parents[n], 0, src)
-            if old_val == 0
-                enqueue!(queues[Threads.threadid()], n)
+        function local_exploration!(src::T) where {T<:Integer}
+            for n in neighbors(graph, src)
+                # If the parent is 0, replace it with src vertex and push to queue
+                old_val = atomic_cas!(parents[n], 0, src)
+                if old_val == 0
+                    enqueue!(queues[Threads.threadid()], n)
+                end
             end
         end
-    end
 
-    to_visit = Vector{T}()
-    push!(to_visit, source)
-
-    parents[source] = Atomic{Int}(source)
-    while !isempty(to_visit)
-        tforeach(local_exploration!, to_visit) # explores vertices in parallel
         to_visit = Vector{T}()
-        for i in 1:Threads.nthreads()
-            while !isempty(queues[i])
-                push!(to_visit, dequeue!(queues[i]))
+        push!(to_visit, source)
+
+        parents[source] = Atomic{Int}(source)
+        while !isempty(to_visit)
+            tforeach(local_exploration!, to_visit) # explores vertices in parallel
+            to_visit = Vector{T}()
+            for i in 1:Threads.nthreads()
+                while !isempty(queues[i])
+                    push!(to_visit, dequeue!(queues[i]))
+                end
             end
         end
+        return nothing
     end
-    return nothing
 end
 
 function bfs_par_local2!(
