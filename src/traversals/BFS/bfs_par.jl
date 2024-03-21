@@ -36,7 +36,7 @@ function bfs_par!(
     return nothing
 end
 
-function bfs_par_local!(
+function bfs_par_local_unsafe!(
     graph::AbstractGraph, source::T, parents::Array{Atomic{T}}, queues::Vector{Queue{T}}
 ) where {T<:Integer}
     if source > nv(graph) || source < 1
@@ -69,7 +69,7 @@ function bfs_par_local!(
     end
 end
 
-function bfs_par_local2!(
+function bfs_par_local!(
     graph::AbstractGraph, source::T, parents::Array{Atomic{T}}, queues::Channel{Queue{T}}
 ) where {T<:Integer}
     if source > nv(graph) || source < 1
@@ -84,6 +84,9 @@ function bfs_par_local2!(
                 q = take!(queues)
                 enqueue!(q, n)
                 put!(queues, q)
+                q = take!(queues)
+                enqueue!(q, n)
+                put!(queues, q)
             end
         end
     end
@@ -92,7 +95,6 @@ function bfs_par_local2!(
     push!(to_visit, source)
 
     parents[source] = Atomic{Int}(source)
-
     while !isempty(to_visit)
         tforeach(local_exploration!, to_visit) # explores vertices in parallel
         to_visit = Vector{T}()
@@ -107,7 +109,7 @@ function bfs_par_local2!(
     return nothing
 end
 
-function bfs_par_local3!(
+function bfs_par_local_probably_slower!(
     graph::AbstractGraph, source::T, parents::Array{Atomic{T}}, chnl::Channel{T}
 ) where {T<:Integer}
     if source > nv(graph) || source < 1
@@ -138,6 +140,29 @@ function bfs_par_local3!(
     return nothing
 end
 
+"""
+    bfs_par_tree(graph::AbstractGraph, source::T)
+
+Run a parallel BFS traversal on a graph and return the parent vertices of each vertex in the BFS tree in a new Array.
+
+See also: [bfs_par!](@ref)
+"""
+function bfs_par(graph::AbstractGraph, source::T) where {T<:Integer}
+    if nv(graph) == 0
+        return T[]
+    end
+    queues = Channel{Queue{T}}(Threads.nthreads())
+    for i in 1:Threads.nthreads()
+        put!(queues, Queue{T}())
+    end
+    parents_atomic = [Atomic{T}(0) for _ in 1:nv(graph)]
+    bfs_par_local!(graph, source, parents_atomic, queues)
+
+    parents = Array{T}(undef, length(parents_atomic))
+    parents = [x[] for x in parents_atomic]
+    return parents
+end
+
 #function bfs_par(graph::AbstractGraph, source::T) where {T<:Integer}
 #    if nv(graph) == 0
 #        return T[]
@@ -150,23 +175,3 @@ end
 #    parents = [x[] for x in parents_atomic]
 #    return parents
 #end
-
-"""
-    bfs_par_tree(graph::AbstractGraph, source::T)
-
-Run a parallel BFS traversal on a graph and return the parent vertices of each vertex in the BFS tree in a new Array.
-
-See also: [bfs_par!](@ref)
-"""
-function bfs_par(graph::AbstractGraph, source::T) where {T<:Integer}
-    if nv(graph) == 0
-        return T[]
-    end
-    channel = Channel{T}(nv(graph))
-    parents_atomic = [Atomic{T}(0) for _ in 1:nv(graph)]
-    bfs_par_local3!(graph, source, parents_atomic, channel)
-
-    parents = Array{T}(undef, length(parents_atomic))
-    parents = [x[] for x in parents_atomic]
-    return parents
-end
