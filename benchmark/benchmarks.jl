@@ -45,10 +45,10 @@ for i in eachindex(graphs)
     parents_atomic = [Atomic{Int}(0) for _ in 1:nv(g)]
     SUITE["BFS"][names[i]][bfs_seq] = @benchmarkable ParallelGraphs.bfs_seq!(
         $g, $START_VERTEX, $parents
-    ) evals = 1
+    ) evals = 1 setup = (parents_prepared = fill(0, nv($g)))
     SUITE["BFS"][names[i]][bfs_par] = @benchmarkable ParallelGraphs.bfs_par!(
         $g, $START_VERTEX, $parents_atomic
-    ) evals = 1
+    ) evals = 1 setup = (parents_atomic_prepared = [Atomic{Int}(0) for _ in 1:nv($g)])
 end
 
 # SUITE["BFS"]["random"][bfs_par] = @benchmarkable ParallelGraphs.bfs_par!(
@@ -57,6 +57,9 @@ end
 # SUITE["BFS"]["random"][bfs_par] = @benchmarkable ParallelGraphs.bfs_par!(
 #     $g, $START_VERTEX, parents_atomic_prepared
 # ) evals = 1 setup = (parents_atomic_prepared = [Atomic{Int}(0) for _ in 1:nv($g)])
+
+
+
 
 # If a cache of tuned parameters already exists, use it, otherwise, tune and cache
 # the benchmark parameters. Reusing cached parameters is faster and more reliable
