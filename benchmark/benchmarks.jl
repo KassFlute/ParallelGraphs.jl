@@ -35,6 +35,12 @@ graphs = [
     barabasi_albert(NUM_VERTICES, 5_000),
 ]
 names = ["random", "dorogovtsev_mendes", "barabasi_albert"]
+graphs = [
+    generate_random_graph(NUM_VERTICES, NUM_EDGES),
+    dorogovtsev_mendes(NUM_VERTICES),
+    barabasi_albert(NUM_VERTICES, 5_000),
+]
+names = ["random", "dorogovtsev_mendes", "barabasi_albert"]
 
 #####################
 ### benchmark BFS ###

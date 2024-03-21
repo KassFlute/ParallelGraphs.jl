@@ -20,6 +20,6 @@ include("utils.jl")
 include("traversals/BFS/bfs_seq.jl")
 include("traversals/BFS/bfs_par.jl")
 
-export bfs_seq, bfs_par
+export bfs_seq, bfs_par, bfs_par_local3!, bfs_par_local2!, bfs_par_local!
 
 end
