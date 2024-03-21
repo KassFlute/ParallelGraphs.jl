@@ -51,6 +51,15 @@ function bfs_par_local!(
                 enqueue!(queues[Threads.threadid()], n)
             end
         end
+
+    function local_exploration!(src::T) where {T<:Integer}
+        for n in neighbors(graph, src)
+            # If the parent is 0, replace it with src vertex and push to queue
+            old_val = atomic_cas!(parents[n], 0, src)
+            if old_val == 0
+                enqueue!(queues[Threads.threadid()], n)
+            end
+        end
     end
 
     to_visit = Vector{T}()
