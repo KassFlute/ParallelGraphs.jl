@@ -1,6 +1,6 @@
 using ParallelGraphs
 using BenchmarkTools
-using Graphs: SimpleGraph, add_edge!, dorogovtsev_mendes, nv
+using Graphs: SimpleGraph, add_edge!, dorogovtsev_mendes, barabasi_albert, nv
 using Base.Threads: Atomic
 
 SUITE = BenchmarkGroup()
@@ -29,20 +29,37 @@ const NUM_VERTICES = 10_000
 const NUM_EDGES = 50_000
 
 # Generate random graphs
-graphs = [generate_random_graph(NUM_VERTICES, NUM_EDGES), dorogovtsev_mendes(NUM_VERTICES)]
-names = ["random", "dorogovtsev_mendes"]
+graphs = [generate_random_graph(NUM_VERTICES, NUM_EDGES), dorogovtsev_mendes(NUM_VERTICES), barabasi_albert(NUM_VERTICES, 5_000)]
+names = ["random", "dorogovtsev_mendes", "barabasi_albert"]
 
 #####################
 ### benchmark BFS ###
 const START_VERTEX = 1
-for i in eachindex(graphs)
-    g = graphs[i]
-    parents = fill(0, nv(g))
-    parents_atomic = [Atomic{Int}(0) for _ in 1:nv(g)]
-    SUITE["BFS"][names[i]][bfs_seq] = @benchmarkable ParallelGraphs.bfs_seq!($g, $START_VERTEX, $parent) evals = 1
-    SUITE["BFS"][names[i]][bfs_par] = @benchmarkable ParallelGraphs.bfs_par!($g, $START_VERTEX, $parents_atomic) evals = 1
-end
+# for i in eachindex(graphs)
+#     g = graphs[i]
+#     parents = fill(0, nv(g))
+#     parents_atomic = [Atomic{Int}(0) for _ in 1:nv(g)]
+#     SUITE["BFS"][names[i]][bfs_seq] = @benchmarkable ParallelGraphs.bfs_seq!($g, $START_VERTEX, $parent) evals = 1
+#     SUITE["BFS"][names[i]][bfs_par] = @benchmarkable ParallelGraphs.bfs_par!($g, $START_VERTEX, $parents_atomic) evals = 1
+# end
 
+g = graphs[1]
+parents = fill(0, nv(g))
+parents_atomic = [Atomic{Int}(0) for _ in 1:nv(g)]
+SUITE["BFS"]["random"][bfs_seq] = @benchmarkable ParallelGraphs.bfs_seq!($g, $START_VERTEX, $parents) evals = 1
+SUITE["BFS"]["random"][bfs_par] = @benchmarkable ParallelGraphs.bfs_par!($g, $START_VERTEX, $parents_atomic) evals = 1
+
+g = graphs[2]
+parents = fill(0, nv(g))
+parents_atomic = [Atomic{Int}(0) for _ in 1:nv(g)]
+SUITE["BFS"]["dorogovtsev_mendes"][bfs_seq] = @benchmarkable ParallelGraphs.bfs_seq!($g, $START_VERTEX, $parents) evals = 1
+SUITE["BFS"]["dorogovtsev_mendes"][bfs_par] = @benchmarkable ParallelGraphs.bfs_par!($g, $START_VERTEX, $parents_atomic) evals = 1
+
+g = graphs[3]
+parents = fill(0, nv(g))
+parents_atomic = [Atomic{Int}(0) for _ in 1:nv(g)]
+SUITE["BFS"]["barabasi_albert"][bfs_seq] = @benchmarkable ParallelGraphs.bfs_seq!($g, $START_VERTEX, $parents) evals = 1
+SUITE["BFS"]["barabasi_albert"][bfs_par] = @benchmarkable ParallelGraphs.bfs_par!($g, $START_VERTEX, $parents_atomic) evals = 1
 
 
 
