@@ -19,7 +19,7 @@ function bfs_par!(
     while !t_isempty(queue)
         sources = queue.data[queue.head[]:(queue.tail[] - 1)]
         queue.head[] = queue.tail[]
-        @threads for src in sources
+        Threads.@spawn for src in sources
             for n in neighbors(graph, src)
 
                 #(@atomicreplace parents[n] 0 => src).success && t_push!(queue, n) 
@@ -37,14 +37,21 @@ function bfs_par!(
 end
 
 function bfs_par_local!(
-    graph::AbstractGraph, source::T, parents::Array{Atomic{T}}
+graph::AbstractGraph, source::T, parents::Array{Atomic{T}}, queues::Vector{Queue{T}}
+      
 ) where {T<:Integer}
     if source > nv(graph) || source < 1
         throw(ArgumentError("source vertex is not in the graph"))
     end
-    buckets = Vector{Queue{T}}(undef, Threads.nthreads())
-    for i in 1:Threads.nthreads()
-        buckets[i] = Queue{T}()
+
+    function local_exploration!(src::T) where {T<:Integer}
+        for n in neighbors(graph, src)
+            # If the parent is 0, replace it with src vertex and push to queue
+            old_val = atomic_cas!(parents[n], 0, src)
+            if old_val == 0
+                enqueue!(queues[Threads.threadid()], n)
+            end
+        end
     end
 
     to_visit = Vector{T}()
@@ -53,26 +60,14 @@ function bfs_par_local!(
     parents[source] = Atomic{Int}(source)
 
     while !isempty(to_visit)
-        @threads for src in to_visit
-            @threads for n in neighbors(graph, src)
-                tid = Threads.threadid()
-
-                # If the parent is 0, replace it with src vertex and push to queue
-                old_val = atomic_cas!(parents[n], 0, src)
-                if old_val == 0
-                    enqueue!(buckets[tid], n)
-                end
-            end
-        end
+        tforeach(local_exploration!, to_visit) # explores vertices in parallel
         to_visit = Vector{T}()
         for i in 1:Threads.nthreads()
-            while !isempty(buckets[i])
-                push!(to_visit, dequeue!(buckets[i]))
+            while !isempty(queues[i])
+                push!(to_visit, dequeue!(queues[i]))
             end
         end
     end
-
-    #return Array{T}(parents) TODO : find a way to efficiently convert Array{Atomic{T}} to Array{T}
     return nothing
 end
 
@@ -87,10 +82,15 @@ function bfs_par(graph::AbstractGraph, source::T) where {T<:Integer}
     if nv(graph) == 0
         return T[]
     end
-
+    queues = Vector{Queue{T}}(undef, Threads.nthreads())
+    for i in 1:Threads.nthreads()
+        queues[i] = Queue{T}()
+    end
     parents_atomic = [Atomic{T}(0) for _ in 1:nv(graph)]
-    parents_atomic = bfs_par!(graph, source, parents_atomic)
-    #parents = Array{T}(parents_atomic)
-    #parents = [x[] for x in parents_atomic]
-    return parents_atomic
+
+    bfs_par_local!(graph, source, parents_atomic, queues)
+
+    parents = Array{T}(undef, length(parents_atomic))
+    parents = [x[] for x in parents_atomic]
+    return parents
 end
