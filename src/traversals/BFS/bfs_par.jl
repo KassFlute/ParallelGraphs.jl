@@ -19,7 +19,8 @@ function bfs_par!(
     while !t_isempty(queue)
         sources = queue.data[queue.head[]:(queue.tail[] - 1)]
         queue.head[] = queue.tail[]
-        Threads.@spawn for src in sources
+        #Threads.@spawn for src in sources
+        @threads for src in sources
             for n in neighbors(graph, src)
 
                 #(@atomicreplace parents[n] 0 => src).success && t_push!(queue, n) 
@@ -151,6 +152,34 @@ function bfs_par(graph::AbstractGraph, source::T) where {T<:Integer}
     if nv(graph) == 0
         return T[]
     end
+    parents_atomic = [Atomic{T}(0) for _ in 1:nv(graph)]
+    bfs_par!(graph, source, parents_atomic)
+
+    parents = Array{T}(undef, length(parents_atomic))
+    parents = [x[] for x in parents_atomic]
+    return parents
+end
+
+function bfs_par_local_unsafe(graph::AbstractGraph, source::T) where {T<:Integer}
+    if nv(graph) == 0
+        return T[]
+    end
+    queues = Vector{Queue{T}}()
+    for i in 1:Threads.nthreads()
+        push!(queues, Queue{T}())
+    end
+    parents_atomic = [Atomic{T}(0) for _ in 1:nv(graph)]
+    bfs_par_local_unsafe!(graph, source, parents_atomic, queues)
+
+    parents = Array{T}(undef, length(parents_atomic))
+    parents = [x[] for x in parents_atomic]
+    return parents
+end
+
+function bfs_par_local(graph::AbstractGraph, source::T) where {T<:Integer}
+    if nv(graph) == 0
+        return T[]
+    end
     queues = Channel{Queue{T}}(Threads.nthreads())
     for i in 1:Threads.nthreads()
         put!(queues, Queue{T}())
@@ -163,15 +192,15 @@ function bfs_par(graph::AbstractGraph, source::T) where {T<:Integer}
     return parents
 end
 
-#function bfs_par(graph::AbstractGraph, source::T) where {T<:Integer}
-#    if nv(graph) == 0
-#        return T[]
-#    end
-#    channel = Channel{T}(nv(graph))
-#    parents_atomic = [Atomic{T}(0) for _ in 1:nv(graph)]
-#    bfs_par_local3!(graph, source, parents_atomic, channel)
-#
-#    parents = Array{T}(undef, length(parents_atomic))
-#    parents = [x[] for x in parents_atomic]
-#    return parents
-#end
+function bfs_par_local_probably_slower(graph::AbstractGraph, source::T) where {T<:Integer}
+    if nv(graph) == 0
+        return T[]
+    end
+    chnl = Channel{T}(Threads.nthreads())
+    parents_atomic = [Atomic{T}(0) for _ in 1:nv(graph)]
+    bfs_par_local_probably_slower!(graph, source, parents_atomic, chnl)
+
+    parents = Array{T}(undef, length(parents_atomic))
+    parents = [x[] for x in parents_atomic]
+    return parents
+end
