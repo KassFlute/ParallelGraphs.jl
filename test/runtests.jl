@@ -103,7 +103,7 @@ using Graphs
                 ParallelGraphs.bfs_par_local,
                 #ParallelGraphs.bfs_par_local_probably_slower, # Runs infinitely
             ]
-            
+
             @testset "Undirected graph" begin
                 ### Empty graph ###
                 graph = SimpleGraph(0)
