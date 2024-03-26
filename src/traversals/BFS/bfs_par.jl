@@ -37,7 +37,7 @@ function bfs_par!(
     return nothing
 end
 
-function bfs_par_local_unsafe_unsafe!(
+function bfs_par_local_unsafe!(
     graph::AbstractGraph, source::T, parents::Array{Atomic{T}}, queues::Vector{Queue{T}}
 ) where {T<:Integer}
     if source > nv(graph) || source < 1
@@ -82,6 +82,9 @@ function bfs_par_local!(
             # If the parent is 0, replace it with src vertex and push to queue
             old_val = atomic_cas!(parents[n], 0, src)
             if old_val == 0
+                q = take!(queues)
+                enqueue!(q, n)
+                put!(queues, q)
                 q = take!(queues)
                 enqueue!(q, n)
                 put!(queues, q)
