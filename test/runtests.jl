@@ -99,9 +99,9 @@ using Graphs
             ### TESTED PARALLEL BFS CANDIDATES ###
             bfs_parallel_algorithms = [
                 bfs_par,
-                #ParallelGraphs.bfs_par_local_unsafe, # Wrong results
+                ParallelGraphs.bfs_par_local_unsafe,
                 ParallelGraphs.bfs_par_local,
-                #ParallelGraphs.bfs_par_local_probably_slower, # Runs infinitely
+                ParallelGraphs.bfs_par_local_probably_slower,
             ]
 
             @testset "Undirected graph" begin

@@ -52,22 +52,22 @@ function bfs_par_local_unsafe!(
                 enqueue!(queues[Threads.threadid()], n)
             end
         end
+    end
 
+    to_visit = Vector{T}()
+    push!(to_visit, source)
+
+    parents[source] = Atomic{Int}(source)
+    while !isempty(to_visit)
+        tforeach(local_exploration!, to_visit) # explores vertices in parallel
         to_visit = Vector{T}()
-        push!(to_visit, source)
-
-        parents[source] = Atomic{Int}(source)
-        while !isempty(to_visit)
-            tforeach(local_exploration!, to_visit) # explores vertices in parallel
-            to_visit = Vector{T}()
-            for i in 1:Threads.nthreads()
-                while !isempty(queues[i])
-                    push!(to_visit, dequeue!(queues[i]))
-                end
+        for i in 1:Threads.nthreads()
+            while !isempty(queues[i])
+                push!(to_visit, dequeue!(queues[i]))
             end
         end
-        return nothing
     end
+    return nothing
 end
 
 function bfs_par_local!(
@@ -196,7 +196,7 @@ function bfs_par_local_probably_slower(graph::AbstractGraph, source::T) where {T
     if nv(graph) == 0
         return T[]
     end
-    chnl = Channel{T}(Threads.nthreads())
+    chnl = Channel{T}(nv(graph))
     parents_atomic = [Atomic{T}(0) for _ in 1:nv(graph)]
     bfs_par_local_probably_slower!(graph, source, parents_atomic, chnl)
 
