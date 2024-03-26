@@ -25,8 +25,8 @@ function generate_random_graph(num_vertices::Int, num_edges::Int)
 end
 
 # Benchmark parameters
-const NUM_VERTICES = 1_000
-const NUM_EDGES = 5_000
+const NUM_VERTICES = 10_000
+const NUM_EDGES = 50_000
 
 # Generate random graphs
 graphs = [
