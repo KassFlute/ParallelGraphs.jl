@@ -223,7 +223,7 @@ using Graphs
                     # The results varies depending on execution, so multithreading is working
                     @test counter == 100
                     if equality
-                        @warn "Some results that should be unpredictable are always identical. Test environnement is probably not configured correctly for multi-threading"
+                        @warn "Some results that should be unpredictable are always identical. Test environnement is probably not configured correctly for multi-threading. Method used : $bfs_par"
                     end
                 end
             end
