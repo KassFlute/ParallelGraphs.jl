@@ -28,12 +28,12 @@ else
 end
 
 # Benchmark parameters
-const DEGREE = [2, 4, 10]
-const SIZE = [1000, 5_000, 20_000]
+DEGREE = [2, 4, 10]
+SIZE = [1000]
 
 #####################
 ### benchmark BFS ###
-const START_VERTEX = 1
+START_VERTEX = 1
 
 for deg in DEGREE
     for num_vertices in SIZE
