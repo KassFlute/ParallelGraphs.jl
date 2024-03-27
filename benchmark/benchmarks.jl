@@ -4,16 +4,6 @@ using Graphs: SimpleGraph, add_edge!, dorogovtsev_mendes, barabasi_albert, nv
 using Base.Threads: Atomic
 using DataStructures: Queue
 
-SUITE = BenchmarkGroup()
-SUITE["rand"] = @benchmarkable rand(10)
-SUITE["BFS"] = BenchmarkGroup()
-
-if Threads.nthreads() == 1
-    @warn "!!! Julia started with: $(Threads.nthreads()) threads, consider starting Julia with more threads to benchmark parallel code: `julia -t auto`."
-else
-    @warn "Julia started with: $(Threads.nthreads()) threads."
-end
-
 # Function to generate a random graph with a given number of vertices and edges
 function generate_random_graph(num_vertices::Int, num_edges::Int)
     graph = SimpleGraph(num_vertices)
@@ -25,17 +15,19 @@ function generate_random_graph(num_vertices::Int, num_edges::Int)
     return graph
 end
 
+SUITE = BenchmarkGroup()
+SUITE["rand"] = @benchmarkable rand(10)
+SUITE["BFS"] = BenchmarkGroup()
+
+if Threads.nthreads() == 1
+    @warn "!!! Julia started with: $(Threads.nthreads()) threads, consider starting Julia with more threads to benchmark parallel code: `julia -t auto`."
+else
+    @warn "Julia started with: $(Threads.nthreads()) threads."
+end
+
 # Benchmark parameters
 const NUM_VERTICES = [100, 500, 1000]
 const NUM_EDGES = [500, 2500, 5000]
-
-# Generate random graphs
-# graphs = [
-#     generate_random_graph(NUM_VERTICES, NUM_EDGES),
-#     dorogovtsev_mendes(NUM_VERTICES),
-#     barabasi_albert(NUM_VERTICES, 500),
-# ]
-# names = ["random", "dorogovtsev_mendes", "barabasi_albert"]
 
 #####################
 ### benchmark BFS ###
@@ -43,35 +35,61 @@ const START_VERTEX = 1
 
 for num_vertices in NUM_VERTICES
     for num_edges in NUM_EDGES
-        # dorogovtsev_mendes
-        g = dorogovtsev_mendes(num_vertices)
-        SUITE["BFS"]["Dorogovtsev Mendes"]["$num_vertices,$num_edges"]["seq"] = @benchmarkable ParallelGraphs.bfs_seq!(
-            $g, $START_VERTEX, parents_prepared
-        ) evals = 1 setup = (parents_prepared = fill(0, nv($g)))
-        SUITE["BFS"]["Dorogovtsev Mendes"]["$num_vertices,$num_edges"]["par"] = @benchmarkable ParallelGraphs.bfs_par!(
-            $g, $START_VERTEX, parents_atomic_prepared
-        ) evals = 1 setup = (parents_atomic_prepared = [Atomic{Int}(0) for _ in 1:nv($g)])
-        SUITE["BFS"]["Dorogovtsev Mendes"]["$num_vertices,$num_edges"]["par_local_unsafe"] = @benchmarkable ParallelGraphs.bfs_par_local_unsafe!(
-            $g, $START_VERTEX, parents_atomic_prepared, queues_prepared
-        ) evals = 1 setup = (parents_atomic_prepared = [Atomic{Int}(0) for _ in 1:nv($g)];
-        queues_prepared = [Queue{Int}() for _ in 1:Threads.nthreads()])
+        # Generate random graphs
+        graphs = [
+            generate_random_graph(num_vertices, num_edges),
+            dorogovtsev_mendes(num_vertices),
+            barabasi_albert(num_vertices, clamp(num_edges, 0, num_vertices)),
+        ]
+        names = ["random", "Dorogovtsev Mendes", "Barabasi Albert"]
 
-        # queues = Channel{Queue{Int}}(Threads.nthreads())
-        # for i in 1:Threads.nthreads()
-        #     put!(queues, Queue{Int}())
-        # end
+        for i in eachindex(graphs)
+            graph = graphs[i]
+            name = names[i]
+            SUITE["BFS"][name]["$num_vertices,$num_edges"]["seq"] = @benchmarkable ParallelGraphs.bfs_seq!(
+                $graph, $START_VERTEX, parents_prepared
+            ) evals = 1 setup = (parents_prepared = fill(0, nv($graph)))
+            SUITE["BFS"][name]["$num_vertices,$num_edges"]["par"] = @benchmarkable ParallelGraphs.bfs_par!(
+                $graph, $START_VERTEX, parents_atomic_prepared
+            ) evals = 1 setup = (
+                parents_atomic_prepared = [Atomic{Int}(0) for _ in 1:nv($graph)]
+            )
+            SUITE["BFS"][name]["$num_vertices,$num_edges"]["par_local_unsafe"] = @benchmarkable ParallelGraphs.bfs_par_local_unsafe!(
+                $graph, $START_VERTEX, parents_atomic_prepared, queues_prepared
+            ) evals = 1 setup = (
+                parents_atomic_prepared = [Atomic{Int}(0) for _ in 1:nv($graph)];
+                queues_prepared = [Queue{Int}() for _ in 1:Threads.nthreads()]
+            )
 
-        SUITE["BFS"]["Dorogovtsev Mendes"]["$num_vertices,$num_edges"]["par_local"] = @benchmarkable ParallelGraphs.bfs_par_local!(
-            $g, $START_VERTEX, parents_atomic_prepared, queues_prepared
-        ) evals = 1 setup = (
-            parents_atomic_prepared = [Atomic{Int}(0) for _ in 1:nv($g)];
-            queues_prepared = Channel{Queue{Int}}(Threads.nthreads()) do ch
-                for _ in 1:Threads.nthreads()
-                    put!(ch, Queue{Int}())
-                end
-                ch
+            queues = Channel{Queue{Int}}(Threads.nthreads())
+            for i in 1:Threads.nthreads()
+                put!(queues, Queue{Int}())
             end
-        )
+            SUITE["BFS"][name]["$num_vertices,$num_edges"]["par_local"] = @benchmarkable ParallelGraphs.bfs_par_local!(
+                $graph, $START_VERTEX, parents_atomic_prepared, $queues
+            ) evals = 1 setup = (
+                parents_atomic_prepared = [Atomic{Int}(0) for _ in 1:nv($graph)]
+                # queues_prepared = Channel{Queue{Int}}(Threads.nthreads()) do ch
+                #     for _ in 1:Threads.nthreads()
+                #         put!(ch, Queue{Int}())
+                #     end
+                #     ch
+                # end
+            )
+
+            chnl = Channel{Int64}(nv(graph))
+            SUITE["BFS"][name]["$num_vertices,$num_edges"]["par_local_probably_slower"] = @benchmarkable ParallelGraphs.bfs_par_local_probably_slower!(
+                $graph, $START_VERTEX, parents_atomic_prepared, $chnl
+            ) evals = 1 setup = (
+                parents_atomic_prepared = [Atomic{Int}(0) for _ in 1:nv($graph)]
+                # queues_prepared = Channel{Queue{Int}}(Threads.nthreads()) do ch
+                #     for _ in 1:Threads.nthreads()
+                #         put!(ch, Queue{Int}())
+                #     end
+                #     ch
+                # end
+            )
+        end
     end
 end
 
