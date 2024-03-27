@@ -85,9 +85,6 @@ function bfs_par_local!(
                 q = take!(queues)
                 enqueue!(q, n)
                 put!(queues, q)
-                q = take!(queues)
-                enqueue!(q, n)
-                put!(queues, q)
             end
         end
     end
@@ -181,8 +178,9 @@ function bfs_par_local(graph::AbstractGraph, source::T) where {T<:Integer}
         return T[]
     end
     queues = Channel{Queue{T}}(Threads.nthreads())
+    blksize = max((nv(graph) ÷ Threads.nthreads()) + 1, 10)
     for i in 1:Threads.nthreads()
-        put!(queues, Queue{T}())
+        put!(queues, Queue{T}(blksize))
     end
     parents_atomic = [Atomic{T}(0) for _ in 1:nv(graph)]
     bfs_par_local!(graph, source, parents_atomic, queues)
