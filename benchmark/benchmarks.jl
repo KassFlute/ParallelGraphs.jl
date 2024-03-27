@@ -26,20 +26,20 @@ else
 end
 
 # Benchmark parameters
-const NUM_VERTICES = [100, 500, 1000]
-const NUM_EDGES = [500, 2500, 5000]
+const DEGREE = [2, 4, 10]
+const SIZE = [1000, 5_000, 20_000]
 
 #####################
 ### benchmark BFS ###
 const START_VERTEX = 1
 
-for num_vertices in NUM_VERTICES
-    for num_edges in NUM_EDGES
+for deg in DEGREE
+    for num_vertices in SIZE
         # Generate random graphs
         graphs = [
-            generate_random_graph(num_vertices, num_edges),
-            dorogovtsev_mendes(num_vertices),
-            barabasi_albert(num_vertices, clamp(num_edges, 0, num_vertices)),
+            #generate_random_graph(num_vertices, num_edges),
+            #dorogovtsev_mendes(num_vertices),
+            barabasi_albert(num_vertices, deg),
         ]
         names = ["random", "Dorogovtsev Mendes", "Barabasi Albert"]
 
