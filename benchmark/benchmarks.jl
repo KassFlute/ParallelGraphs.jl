@@ -63,33 +63,26 @@ for deg in DEGREE
                 queues_prepared = [Queue{Int}() for _ in 1:Threads.nthreads()]
             )
 
-            queues = Channel{Queue{Int}}(Threads.nthreads())
-            for i in 1:Threads.nthreads()
-                put!(queues, Queue{Int}())
-            end
+            # queues = Channel{Queue{Int}}(Threads.nthreads())
+            # for i in 1:Threads.nthreads()
+            #     put!(queues, Queue{Int}())
+            # end
             SUITE["BFS"][name]["$num_vertices,$deg"]["par_local"] = @benchmarkable ParallelGraphs.bfs_par_local!(
-                $graph, $START_VERTEX, parents_atomic_prepared, $queues
+                $graph, $START_VERTEX, parents_atomic_prepared, queues_prepared
             ) evals = 1 setup = (
-                parents_atomic_prepared = [Atomic{Int}(0) for _ in 1:nv($graph)]
-                # queues_prepared = Channel{Queue{Int}}(Threads.nthreads()) do ch
-                #     for _ in 1:Threads.nthreads()
-                #         put!(ch, Queue{Int}())
-                #     end
-                #     ch
-                # end
+                parents_atomic_prepared = [Atomic{Int}(0) for _ in 1:nv($graph)];
+                queues_prepared = Channel{Queue{Int}}(Threads.nthreads());
+                foreach(1:Threads.nthreads()) do i
+                    put!(queues_prepared, Queue{Int}())
+                end
             )
 
-            chnl = Channel{Int64}(nv(graph))
+            # chnl = Channel{Int64}(nv(graph))
             SUITE["BFS"][name]["$num_vertices,$deg"]["par_local_probably_slower"] = @benchmarkable ParallelGraphs.bfs_par_local_probably_slower!(
-                $graph, $START_VERTEX, parents_atomic_prepared, $chnl
+                $graph, $START_VERTEX, parents_atomic_prepared, chnl_prepared
             ) evals = 1 setup = (
-                parents_atomic_prepared = [Atomic{Int}(0) for _ in 1:nv($graph)]
-                # queues_prepared = Channel{Queue{Int}}(Threads.nthreads()) do ch
-                #     for _ in 1:Threads.nthreads()
-                #         put!(ch, Queue{Int}())
-                #     end
-                #     ch
-                # end
+                parents_atomic_prepared = [Atomic{Int}(0) for _ in 1:nv($graph)];
+                chnl_prepared = Channel{Int}(nv($graph))
             )
         end
     end
@@ -106,7 +99,6 @@ end
 #         $g, $START_VERTEX, parents_atomic_prepared
 #     ) evals = 1 setup = (parents_atomic_prepared = [Atomic{Int}(0) for _ in 1:nv($g)])
 # end
-
 
 # If a cache of tuned parameters already exists, use it, otherwise, tune and cache
 # the benchmark parameters. Reusing cached parameters is faster and more reliable
