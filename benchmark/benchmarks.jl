@@ -46,15 +46,15 @@ for deg in DEGREE
         for i in eachindex(graphs)
             graph = graphs[i]
             name = names[i]
-            SUITE["BFS"][name]["$num_vertices,$num_edges"]["seq"] = @benchmarkable ParallelGraphs.bfs_seq!(
+            SUITE["BFS"][name]["$num_vertices,$deg"]["seq"] = @benchmarkable ParallelGraphs.bfs_seq!(
                 $graph, $START_VERTEX, parents_prepared
             ) evals = 1 setup = (parents_prepared = fill(0, nv($graph)))
-            SUITE["BFS"][name]["$num_vertices,$num_edges"]["par"] = @benchmarkable ParallelGraphs.bfs_par!(
+            SUITE["BFS"][name]["$num_vertices,$deg"]["par"] = @benchmarkable ParallelGraphs.bfs_par!(
                 $graph, $START_VERTEX, parents_atomic_prepared
             ) evals = 1 setup = (
                 parents_atomic_prepared = [Atomic{Int}(0) for _ in 1:nv($graph)]
             )
-            SUITE["BFS"][name]["$num_vertices,$num_edges"]["par_local_unsafe"] = @benchmarkable ParallelGraphs.bfs_par_local_unsafe!(
+            SUITE["BFS"][name]["$num_vertices,$deg"]["par_local_unsafe"] = @benchmarkable ParallelGraphs.bfs_par_local_unsafe!(
                 $graph, $START_VERTEX, parents_atomic_prepared, queues_prepared
             ) evals = 1 setup = (
                 parents_atomic_prepared = [Atomic{Int}(0) for _ in 1:nv($graph)];
@@ -65,7 +65,7 @@ for deg in DEGREE
             for i in 1:Threads.nthreads()
                 put!(queues, Queue{Int}())
             end
-            SUITE["BFS"][name]["$num_vertices,$num_edges"]["par_local"] = @benchmarkable ParallelGraphs.bfs_par_local!(
+            SUITE["BFS"][name]["$num_vertices,$deg"]["par_local"] = @benchmarkable ParallelGraphs.bfs_par_local!(
                 $graph, $START_VERTEX, parents_atomic_prepared, $queues
             ) evals = 1 setup = (
                 parents_atomic_prepared = [Atomic{Int}(0) for _ in 1:nv($graph)]
@@ -78,7 +78,7 @@ for deg in DEGREE
             )
 
             chnl = Channel{Int64}(nv(graph))
-            SUITE["BFS"][name]["$num_vertices,$num_edges"]["par_local_probably_slower"] = @benchmarkable ParallelGraphs.bfs_par_local_probably_slower!(
+            SUITE["BFS"][name]["$num_vertices,$deg"]["par_local_probably_slower"] = @benchmarkable ParallelGraphs.bfs_par_local_probably_slower!(
                 $graph, $START_VERTEX, parents_atomic_prepared, $chnl
             ) evals = 1 setup = (
                 parents_atomic_prepared = [Atomic{Int}(0) for _ in 1:nv($graph)]
@@ -105,17 +105,6 @@ end
 #     ) evals = 1 setup = (parents_atomic_prepared = [Atomic{Int}(0) for _ in 1:nv($g)])
 # end
 
-for i in eachindex(graphs)
-    g = graphs[i]
-    parents = fill(0, nv(g))
-    parents_atomic = [Atomic{Int}(0) for _ in 1:nv(g)]
-    SUITE["BFS"][names[i]][bfs_seq] = @benchmarkable ParallelGraphs.bfs_seq!(
-        $g, $START_VERTEX, parents_prepared
-    ) evals = 1 setup = (parents_prepared = fill(0, nv($g)))
-    SUITE["BFS"][names[i]][bfs_par] = @benchmarkable ParallelGraphs.bfs_par!(
-        $g, $START_VERTEX, parents_atomic_prepared
-    ) evals = 1 setup = (parents_atomic_prepared = [Atomic{Int}(0) for _ in 1:nv($g)])
-end
 
 # If a cache of tuned parameters already exists, use it, otherwise, tune and cache
 # the benchmark parameters. Reusing cached parameters is faster and more reliable
