@@ -15,6 +15,8 @@ function generate_random_graph(num_vertices::Int, num_edges::Int)
     return graph
 end
 
+BenchmarkTools.DEFAULT_PARAMETERS.samples = 10
+BenchmarkTools.DEFAULT_PARAMETERS.seconds = Inf
 SUITE = BenchmarkGroup()
 SUITE["rand"] = @benchmarkable rand(10)
 SUITE["BFS"] = BenchmarkGroup()
