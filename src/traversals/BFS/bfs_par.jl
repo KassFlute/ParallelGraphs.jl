@@ -122,6 +122,15 @@ function bfs_par_local!(
         return nothing
     end
 
+    function merge_queues!(
+        q::Queue{T}, to_visit::Vector{T}, start::Int, len::Int
+    ) where {T<:Integer}
+        last = len + start
+        splice!(to_visit, start:(last - 1), collect(q))
+        empty!(q)
+        return nothing
+    end
+
     granularity = length(queues)
     #to_visit = zeros(T, nv(graph))
     to_visit[1] = source
@@ -138,28 +147,17 @@ function bfs_par_local!(
         else
             local_exploration!(Vector[view(to_visit, 1:last_elem)][1], queues[1])
         end
-
-        last_elem = 0
         fill!(to_visit, zero(T))
-        for i in 1:granularity
-            q = queues[i]
-            last = length(q) + last_elem
-            #println("splicing : ", length(q), " from ", last_elem, " to ", last)
-            splice!(to_visit, (last_elem + 1):last, collect(q))
-            last_elem = last
-            empty!(q)
-
-            #l = length(q)
-            #for j in (last_elem + 1):(last_elem + l)
-            #    to_visit[j] = dequeue!(q)
-            #end
-            #last_elem += l
-
-            #while !isempty(q)
-            #    last_elem += 1
-            #    to_visit[last_elem] = dequeue!(q)
-            #end
+        acc = 1
+        @sync for i in 1:granularity
+            start_index = acc
+            l = length(queues[i])
+            if l != 0
+                @spawn merge_queues!(queues[i], to_visit, start_index, l)
+                acc += l
+            end
         end
+        last_elem = acc - 1
     end
     return nothing
 end
