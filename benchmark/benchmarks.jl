@@ -27,6 +27,18 @@ else
     @warn "Julia started with: $(Threads.nthreads()) threads."
 end
 
+BenchmarkTools.DEFAULT_PARAMETERS.samples = 10
+BenchmarkTools.DEFAULT_PARAMETERS.seconds = Inf
+SUITE = BenchmarkGroup()
+SUITE["rand"] = @benchmarkable rand(10)
+SUITE["BFS"] = BenchmarkGroup()
+
+if Threads.nthreads() == 1
+    @warn "!!! Julia started with: $(Threads.nthreads()) threads, consider starting Julia with more threads to benchmark parallel code: `julia -t auto`."
+else
+    @warn "Julia started with: $(Threads.nthreads()) threads."
+end
+
 # Benchmark parameters
 DEGREE = [2, 10, 120]
 SIZE = [130_000]
@@ -76,7 +88,7 @@ for deg in DEGREE
             ) evals = 1 setup = (
                 parents_atomic_prepared = [Atomic{Int}(0) for _ in 1:nv($graph)];
                 queues_prepared = Vector{Queue{Int}}();
-                foreach(1:Threads.nthreads()) do i
+                foreach(1:(10 * Threads.nthreads())) do i
                     push!(queues_prepared, Queue{Int}())
                 end;
                 to_visit_prepared = zeros(Int, nv($graph))

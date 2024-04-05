@@ -37,3 +37,19 @@ end
 function t_getindex(q::ThreadQueue{T}, iter) where {T}
     return q.data[iter]
 end
+
+function split_chunks!(
+    v::Vector{T}, nb_chunks::Int, size::Int, res::Vector{Vector{T}}
+) where {T}
+    if size % nb_chunks == 0
+        chunk_size = div(size, nb_chunks)
+    else
+        chunk_size = div(size, nb_chunks - 1)
+    end
+
+    for i in 1:(nb_chunks - 1)
+        res[i] = view(v, ((i - 1) * chunk_size + 1):(i * chunk_size))
+    end
+    res[nb_chunks] = view(v, ((nb_chunks - 1) * chunk_size + 1):size)
+    return nothing
+end

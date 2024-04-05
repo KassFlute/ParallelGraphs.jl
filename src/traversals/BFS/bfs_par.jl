@@ -101,7 +101,7 @@ end
 function bfs_par_local!(
     graph::AbstractGraph,
     source::T,
-    parents::Array{Atomic{T}},
+    parents::Vector{Atomic{T}},
     queues::Vector{Queue{T}},
     to_visit::Vector{T},
 ) where {T<:Integer}
@@ -122,7 +122,7 @@ function bfs_par_local!(
         return nothing
     end
 
-    granularity = Threads.nthreads()
+    granularity = length(queues)
     #to_visit = zeros(T, nv(graph))
     to_visit[1] = source
     parents[source] = Atomic{Int}(source)
@@ -148,7 +148,7 @@ function bfs_par_local!(
             splice!(to_visit, (last_elem + 1):last, collect(q))
             last_elem = last
             empty!(q)
-            
+
             #l = length(q)
             #for j in (last_elem + 1):(last_elem + l)
             #    to_visit[j] = dequeue!(q)
