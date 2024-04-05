@@ -27,6 +27,18 @@ else
     @warn "Julia started with: $(Threads.nthreads()) threads."
 end
 
+BenchmarkTools.DEFAULT_PARAMETERS.samples = 10
+BenchmarkTools.DEFAULT_PARAMETERS.seconds = Inf
+SUITE = BenchmarkGroup()
+SUITE["rand"] = @benchmarkable rand(10)
+SUITE["BFS"] = BenchmarkGroup()
+
+if Threads.nthreads() == 1
+    @warn "!!! Julia started with: $(Threads.nthreads()) threads, consider starting Julia with more threads to benchmark parallel code: `julia -t auto`."
+else
+    @warn "Julia started with: $(Threads.nthreads()) threads."
+end
+
 # Benchmark parameters
 DEGREE = [2, 10, 120]
 SIZE = [130_000]
