@@ -11,6 +11,17 @@ function bfs_par!(
     if source > nv(graph) || source < 1
         throw(ArgumentError("source vertex is not in the graph"))
     end
+
+    #function local_exploration!(src::T) where {T<:Integer}
+    #    for n in neighbors(graph, src)
+    #        # If the parent is 0, replace it with src vertex and push to queue
+    #        old_val = atomic_cas!(parents[n], 0, src)
+    #        if old_val == 0
+    #            t_push!(queue, n)
+    #        end
+    #    end
+    #end
+
     queue = ThreadQueue(T, nv(graph))
     t_push!(queue, source)
 
@@ -19,7 +30,6 @@ function bfs_par!(
     while !t_isempty(queue)
         sources = queue.data[queue.head[]:(queue.tail[] - 1)]
         queue.head[] = queue.tail[]
-        #Threads.@spawn for src in sources
         @threads for src in sources
             for n in neighbors(graph, src)
 
@@ -31,9 +41,8 @@ function bfs_par!(
                 end
             end
         end
+        #tforeach(local_exploration!, sources) # explores vertices in parallel
     end
-
-    #return Array{T}(parents) TODO : find a way to efficiently convert Array{Atomic{T}} to Array{T}
     return nothing
 end
 
@@ -54,54 +63,102 @@ function bfs_par_local_unsafe!(
         end
     end
 
-    to_visit = Vector{T}()
-    push!(to_visit, source)
+    #to_visit = Vector{T}()
+    #push!(to_visit, source)
 
+    to_visit = zeros(T, nv(graph))
+    to_visit[1] = source
     parents[source] = Atomic{Int}(source)
-    while !isempty(to_visit)
-        tforeach(local_exploration!, to_visit) # explores vertices in parallel
-        to_visit = Vector{T}()
+    first_free_index = 2
+    while (first_free_index > 1)
+        #println(parents)
+
+        tforeach(local_exploration!, view(to_visit, 1:(first_free_index - 1))) # explores vertices in parallel
+        first_free_index = 1
+        fill!(to_visit, zero(T))
+
         for i in 1:Threads.nthreads()
-            while !isempty(queues[i])
-                push!(to_visit, dequeue!(queues[i]))
-            end
+            q = queues[i]
+            last = length(q) - 1 + first_free_index
+            splice!(to_visit, first_free_index:last, collect(q))
+            first_free_index = last + 1
+            empty!(q)
         end
     end
+
+    #while !isempty(to_visit)
+    #    tforeach(local_exploration!, to_visit) # explores vertices in parallel
+    #    to_visit = Vector{T}()
+    #    for i in 1:Threads.nthreads()
+    #        while !isempty(queues[i])
+    #            push!(to_visit, dequeue!(queues[i]))
+    #        end
+    #    end
+    #end
     return nothing
 end
 
 function bfs_par_local!(
-    graph::AbstractGraph, source::T, parents::Array{Atomic{T}}, queues::Channel{Queue{T}}
+    graph::AbstractGraph,
+    source::T,
+    parents::Array{Atomic{T}},
+    queues::Vector{Queue{T}},
+    to_visit::Vector{T},
 ) where {T<:Integer}
     if source > nv(graph) || source < 1
         throw(ArgumentError("source vertex is not in the graph"))
     end
 
-    function local_exploration!(src::T) where {T<:Integer}
-        for n in neighbors(graph, src)
-            # If the parent is 0, replace it with src vertex and push to queue
-            old_val = atomic_cas!(parents[n], 0, src)
-            if old_val == 0
-                q = take!(queues)
-                enqueue!(q, n)
-                put!(queues, q)
+    function local_exploration!(src_vect::Vector{T}, q::Queue{T}) where {T<:Integer}
+        for src in src_vect
+            for n in neighbors(graph, src)
+                # If the parent is 0, replace it with src vertex and push to queue
+                old_val = atomic_cas!(parents[n], 0, src)
+                if old_val == 0
+                    enqueue!(q, n)
+                end
             end
         end
+        return nothing
     end
 
-    to_visit = Vector{T}()
-    push!(to_visit, source)
-
+    granularity = Threads.nthreads()
+    #to_visit = zeros(T, nv(graph))
+    to_visit[1] = source
     parents[source] = Atomic{Int}(source)
-    while !isempty(to_visit)
-        tforeach(local_exploration!, to_visit) # explores vertices in parallel
-        to_visit = Vector{T}()
-        for i in 1:Threads.nthreads()
-            q = take!(queues)
-            while !isempty(q)
-                push!(to_visit, dequeue!(q))
+    last_elem = 1
+    chunks = Vector{Vector{T}}(undef, granularity)
+    while (last_elem > 0)
+        #tforeach(local_exploration!, view(to_visit, 1:(first_free_index - 1))) # explores vertices in parallel
+        if last_elem > granularity
+            split_chunks!(to_visit, granularity, last_elem, chunks)
+            @sync for i in 1:granularity
+                @spawn local_exploration!(chunks[i], queues[i])
             end
-            put!(queues, q)
+        else
+            local_exploration!(Vector[view(to_visit, 1:last_elem)][1], queues[1])
+        end
+
+        last_elem = 0
+        fill!(to_visit, zero(T))
+        for i in 1:granularity
+            q = queues[i]
+            last = length(q) + last_elem
+            #println("splicing : ", length(q), " from ", last_elem, " to ", last)
+            splice!(to_visit, (last_elem + 1):last, collect(q))
+            last_elem = last
+            empty!(q)
+            
+            #l = length(q)
+            #for j in (last_elem + 1):(last_elem + l)
+            #    to_visit[j] = dequeue!(q)
+            #end
+            #last_elem += l
+
+            #while !isempty(q)
+            #    last_elem += 1
+            #    to_visit[last_elem] = dequeue!(q)
+            #end
         end
     end
     return nothing
@@ -177,13 +234,14 @@ function bfs_par_local(graph::AbstractGraph, source::T) where {T<:Integer}
     if nv(graph) == 0
         return T[]
     end
-    queues = Channel{Queue{T}}(Threads.nthreads())
+    queues = Vector{Queue{T}}()
     blksize = max((nv(graph) ÷ Threads.nthreads()) + 1, 10)
     for i in 1:Threads.nthreads()
-        put!(queues, Queue{T}(blksize))
+        push!(queues, Queue{T}(blksize))
     end
     parents_atomic = [Atomic{T}(0) for _ in 1:nv(graph)]
-    bfs_par_local!(graph, source, parents_atomic, queues)
+    to_visit = zeros(T, nv(graph))
+    bfs_par_local!(graph, source, parents_atomic, queues, to_visit)
 
     parents = Array{T}(undef, length(parents_atomic))
     parents = [x[] for x in parents_atomic]

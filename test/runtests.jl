@@ -285,6 +285,12 @@ using Graphs
                     @test (res == expected_parents_1) ⊻ (res == expected_parents_2)
                 end
             end
+            @testset "Stress tests" begin
+                graph = barabasi_albert(100_005, 10)
+                for bfs_par in bfs_parallel_algorithms
+                    bfs_par(graph, 1)
+                end
+            end
         end
 
         @testset "utils" begin

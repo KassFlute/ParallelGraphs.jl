@@ -2,7 +2,7 @@ using ParallelGraphs
 using BenchmarkTools
 using Graphs: SimpleGraph, add_edge!, dorogovtsev_mendes, barabasi_albert, nv
 using Base.Threads: Atomic
-using DataStructures: Queue
+using DataStructures: Queue, enqueue!
 
 # Function to generate a random graph with a given number of vertices and edges
 function generate_random_graph(num_vertices::Int, num_edges::Int)
@@ -28,8 +28,8 @@ else
 end
 
 # Benchmark parameters
-DEGREE = [2, 4, 10]
-SIZE = [1000]
+DEGREE = [2, 10, 120]
+SIZE = [130_000]
 
 #####################
 ### benchmark BFS ###
@@ -68,13 +68,18 @@ for deg in DEGREE
             #     put!(queues, Queue{Int}())
             # end
             SUITE["BFS"][name]["$num_vertices,$deg"]["par_local"] = @benchmarkable ParallelGraphs.bfs_par_local!(
-                $graph, $START_VERTEX, parents_atomic_prepared, queues_prepared
+                $graph,
+                $START_VERTEX,
+                parents_atomic_prepared,
+                queues_prepared,
+                to_visit_prepared,
             ) evals = 1 setup = (
                 parents_atomic_prepared = [Atomic{Int}(0) for _ in 1:nv($graph)];
-                queues_prepared = Channel{Queue{Int}}(Threads.nthreads());
+                queues_prepared = Vector{Queue{Int}}();
                 foreach(1:Threads.nthreads()) do i
-                    put!(queues_prepared, Queue{Int}())
-                end
+                    push!(queues_prepared, Queue{Int}())
+                end;
+                to_visit_prepared = zeros(Int, nv($graph))
             )
 
             # chnl = Channel{Int64}(nv(graph))
