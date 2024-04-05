@@ -148,7 +148,7 @@ function bfs_par_local!(
             splice!(to_visit, (last_elem + 1):last, collect(q))
             last_elem = last
             empty!(q)
-            
+
             #l = length(q)
             #for j in (last_elem + 1):(last_elem + l)
             #    to_visit[j] = dequeue!(q)

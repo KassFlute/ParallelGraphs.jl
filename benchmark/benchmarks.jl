@@ -88,7 +88,7 @@ for deg in DEGREE
             ) evals = 1 setup = (
                 parents_atomic_prepared = [Atomic{Int}(0) for _ in 1:nv($graph)];
                 queues_prepared = Vector{Queue{Int}}();
-                foreach(1:10*Threads.nthreads()) do i
+                foreach(1:(10 * Threads.nthreads())) do i
                     push!(queues_prepared, Queue{Int}())
                 end;
                 to_visit_prepared = zeros(Int, nv($graph))
