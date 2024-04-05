@@ -223,7 +223,7 @@ using Graphs
                     # The results varies depending on execution, so multithreading is working
                     @test counter == 100
                     if equality
-                        @warn "Some results that should be unpredictable are always identical. Test environnement is probably not configured correctly for multi-threading"
+                        @warn "Some results that should be unpredictable are always identical. Test environnement is probably not configured correctly for multi-threading. Method used : $bfs_par"
                     end
                 end
             end
@@ -231,7 +231,9 @@ using Graphs
             @testset "Directed Graphs" begin
                 ###  Empty graph ###
                 graph = SimpleDiGraph(0)
-                @test bfs_par(graph, 0) == []
+                for bfs_par in bfs_parallel_algorithms
+                    @test bfs_par(graph, 0) == []
+                end
 
                 ### Simple directed graph ###
                 adjacency_matrix = [
@@ -244,13 +246,17 @@ using Graphs
 
                 # correct from source 1
                 expected_parents_1 = [1, 1, 2, 3]
-                res = bfs_par(graph, 1)
-                @test res == expected_parents_1
+                for bfs_par in bfs_parallel_algorithms
+                    res = bfs_par(graph, 1)
+                    @test res == expected_parents_1
+                end
 
                 # correct from source 2
                 expected_parents_1 = [0, 2, 2, 3]
-                res = bfs_par(graph, 2)
-                @test res == expected_parents_1
+                for bfs_par in bfs_parallel_algorithms
+                    res = bfs_par(graph, 2)
+                    @test res == expected_parents_1
+                end
 
                 ### More complicated directed graph ###
                 adjacency_matrix = [
@@ -270,12 +276,20 @@ using Graphs
                     0 0 0 0 0 0 0 0 0 0 0 0 0 0
                 ]
                 graph = SimpleDiGraph(adjacency_matrix)
-                res = bfs_par(graph, 1)
 
-                # correct from source 1
-                expected_parents_1 = [1, 1, 2, 3, 4, 5, 6, 4, 8, 9, 7, 10, 0, 7]
-                expected_parents_2 = [1, 1, 2, 3, 4, 5, 6, 4, 8, 9, 10, 10, 0, 7]
-                @test (res == expected_parents_1) ⊻ (res == expected_parents_2)
+                for bfs_par in bfs_parallel_algorithms
+                    # correct from source 1
+                    expected_parents_1 = [1, 1, 2, 3, 4, 5, 6, 4, 8, 9, 7, 10, 0, 7]
+                    expected_parents_2 = [1, 1, 2, 3, 4, 5, 6, 4, 8, 9, 10, 10, 0, 7]
+                    res = bfs_par(graph, 1)
+                    @test (res == expected_parents_1) ⊻ (res == expected_parents_2)
+                end
+            end
+            @testset "Stress tests" begin
+                graph = barabasi_albert(100_005, 10)
+                for bfs_par in bfs_parallel_algorithms
+                    bfs_par(graph, 1)
+                end
             end
         end
 

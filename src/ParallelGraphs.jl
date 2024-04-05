@@ -25,6 +25,8 @@ export bfs_seq,
     bfs_par!,
     bfs_par_local!,
     bfs_par_local_unsafe!,
-    bfs_par_local_probably_slower!
+    bfs_par_local_probably_slower!,
+    ThreadQueue,
+    t_push!
 
 end
