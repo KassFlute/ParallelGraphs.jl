@@ -1,6 +1,15 @@
 using ParallelGraphs
 using BenchmarkTools
-using Graphs: SimpleGraph, add_edge!, dorogovtsev_mendes, barabasi_albert, nv
+using Graphs:
+    SimpleGraph,
+    add_edge!,
+    dorogovtsev_mendes,
+    barabasi_albert,
+    nv,
+    binary_tree,
+    double_binary_tree,
+    star_graph,
+    grid
 using Base.Threads: Atomic
 using DataStructures: Queue, enqueue!
 
@@ -40,69 +49,75 @@ else
 end
 
 # Benchmark parameters
-DEGREE = [2, 10, 120]
-SIZE = [130_000]
+DEGREE = [2, 6, 20, 100]
+SIZE = [10_000, 40_000, 100_000, 200_000]
 
 #####################
 ### benchmark BFS ###
 START_VERTEX = 1
+graphs = []
+names = []
 
-for deg in DEGREE
-    for num_vertices in SIZE
-        # Generate random graphs
-        graphs = [
-            #generate_random_graph(num_vertices, num_edges),
-            #dorogovtsev_mendes(num_vertices),
-            barabasi_albert(num_vertices, deg),
-        ]
-        names = ["random", "Dorogovtsev Mendes", "Barabasi Albert"]
+for v in SIZE
+    push!(graphs, dorogovtsev_mendes(v))
+    push!(names, "dorogovtsev_mendes($v)")
 
-        for i in eachindex(graphs)
-            graph = graphs[i]
-            name = names[i]
-            SUITE["BFS"][name]["$num_vertices,$deg"]["seq"] = @benchmarkable ParallelGraphs.bfs_seq!(
-                $graph, $START_VERTEX, parents_prepared
-            ) evals = 1 setup = (parents_prepared = fill(0, nv($graph)))
-            SUITE["BFS"][name]["$num_vertices,$deg"]["par"] = @benchmarkable ParallelGraphs.bfs_par!(
-                $graph, $START_VERTEX, parents_atomic_prepared
-            ) evals = 1 setup = (
-                parents_atomic_prepared = [Atomic{Int}(0) for _ in 1:nv($graph)]
-            )
-            SUITE["BFS"][name]["$num_vertices,$deg"]["par_local_unsafe"] = @benchmarkable ParallelGraphs.bfs_par_local_unsafe!(
-                $graph, $START_VERTEX, parents_atomic_prepared, queues_prepared
-            ) evals = 1 setup = (
-                parents_atomic_prepared = [Atomic{Int}(0) for _ in 1:nv($graph)];
-                queues_prepared = [Queue{Int}() for _ in 1:Threads.nthreads()]
-            )
+    push!(graphs, barabasi_albert(v, 4))
+    push!(names, "barabasi_albert($v, 4)")
 
-            # queues = Channel{Queue{Int}}(Threads.nthreads())
-            # for i in 1:Threads.nthreads()
-            #     put!(queues, Queue{Int}())
-            # end
-            SUITE["BFS"][name]["$num_vertices,$deg"]["par_local"] = @benchmarkable ParallelGraphs.bfs_par_local!(
-                $graph,
-                $START_VERTEX,
-                parents_atomic_prepared,
-                queues_prepared,
-                to_visit_prepared,
-            ) evals = 1 setup = (
-                parents_atomic_prepared = [Atomic{Int}(0) for _ in 1:nv($graph)];
-                queues_prepared = Vector{Queue{Int}}();
-                foreach(1:(10 * Threads.nthreads())) do i
-                    push!(queues_prepared, Queue{Int}())
-                end;
-                to_visit_prepared = zeros(Int, nv($graph))
-            )
+    push!(graphs, binary_tree(round(Int, log2(v)) + 1))
+    push!(names, "binary_tree($(round(Int, log2(v)) + 1))")
 
-            # chnl = Channel{Int64}(nv(graph))
-            SUITE["BFS"][name]["$num_vertices,$deg"]["par_local_probably_slower"] = @benchmarkable ParallelGraphs.bfs_par_local_probably_slower!(
-                $graph, $START_VERTEX, parents_atomic_prepared, chnl_prepared
-            ) evals = 1 setup = (
-                parents_atomic_prepared = [Atomic{Int}(0) for _ in 1:nv($graph)];
-                chnl_prepared = Channel{Int}(nv($graph))
-            )
-        end
-    end
+    push!(graphs, double_binary_tree(round(Int, log2(v))))
+    push!(names, "double_binary_tree($(round(Int, log2(v))))")
+    
+    push!(graphs, star_graph(v))
+    push!(names, "star_graph($v)")
+
+    N = round(Int, cbrt(v))
+    push!(graphs, grid([N, N, N]))
+    push!(names, "grid($N^3)")
+end
+
+for d in DEGREE
+    push!(graphs, barabasi_albert(100_000, d))
+    push!(names, "barabasi_albert(100_000, $d)")
+end
+println(length(graphs))
+for i in eachindex(graphs)
+    graph = graphs[i]
+    name = names[i]
+    SUITE["BFS"][name]["seq"] = @benchmarkable ParallelGraphs.bfs_seq!(
+        $graph, $START_VERTEX, parents_prepared
+    ) evals = 1 setup = (parents_prepared = fill(0, nv($graph)))
+    SUITE["BFS"][name]["par"] = @benchmarkable ParallelGraphs.bfs_par!(
+        $graph, $START_VERTEX, parents_atomic_prepared
+    ) evals = 1 setup = (parents_atomic_prepared = [Atomic{Int}(0) for _ in 1:nv($graph)])
+    SUITE["BFS"][name]["par_local_unsafe"] = @benchmarkable ParallelGraphs.bfs_par_local_unsafe!(
+        $graph, $START_VERTEX, parents_atomic_prepared, queues_prepared
+    ) evals = 1 setup = (parents_atomic_prepared = [Atomic{Int}(0) for _ in 1:nv($graph)];
+    queues_prepared = [Queue{Int}() for _ in 1:Threads.nthreads()])
+
+    # queues = Channel{Queue{Int}}(Threads.nthreads())
+    # for i in 1:Threads.nthreads()
+    #     put!(queues, Queue{Int}())
+    # end
+    SUITE["BFS"][name]["par_local"] = @benchmarkable ParallelGraphs.bfs_par_local!(
+        $graph, $START_VERTEX, parents_atomic_prepared, queues_prepared, to_visit_prepared
+    ) evals = 1 setup = (
+        parents_atomic_prepared = [Atomic{Int}(0) for _ in 1:nv($graph)];
+        queues_prepared = Vector{Queue{Int}}();
+        foreach(1:(10 * Threads.nthreads())) do i
+            push!(queues_prepared, Queue{Int}())
+        end;
+        to_visit_prepared = zeros(Int, nv($graph))
+    )
+
+    # chnl = Channel{Int64}(nv(graph))
+    SUITE["BFS"][name]["par_local_probably_slower"] = @benchmarkable ParallelGraphs.bfs_par_local_probably_slower!(
+        $graph, $START_VERTEX, parents_atomic_prepared, chnl_prepared
+    ) evals = 1 setup = (parents_atomic_prepared = [Atomic{Int}(0) for _ in 1:nv($graph)];
+    chnl_prepared = Channel{Int}(nv($graph)))
 end
 
 # for i in eachindex(graphs)
