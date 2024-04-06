@@ -2,7 +2,7 @@
 
 julia_version = "1.10.2"
 manifest_format = "2.0"
-project_hash = "27f85d7864487e8677422eeab86dfcee1b24fdb4"
+project_hash = "c90972d6eab845feac33c71e94d2628b4a53f1a0"
 
 [[deps.AbstractFFTs]]
 deps = ["LinearAlgebra"]
@@ -425,24 +425,6 @@ deps = ["Artifacts", "Gettext_jll", "JLLWrappers", "Libdl", "Libffi_jll", "Libic
 git-tree-sha1 = "359a1ba2e320790ddbe4ee8b4d54a305c0ea2aff"
 uuid = "7746bdde-850d-59dc-9ae8-88ece973131d"
 version = "2.80.0+0"
-
-[[deps.GraphIO]]
-deps = ["DelimitedFiles", "Graphs", "Requires", "SimpleTraits"]
-git-tree-sha1 = "bc5b7609e9f4583f303a0ab2a7016ea318464da0"
-uuid = "aa1b3936-2fda-51b9-ab35-c553d3a640a2"
-version = "0.7.0"
-
-    [deps.GraphIO.extensions]
-    GraphIODOTExt = "ParserCombinator"
-    GraphIOGEXFExt = "EzXML"
-    GraphIOGMLExt = "ParserCombinator"
-    GraphIOGraphMLExt = "EzXML"
-    GraphIOLGCompressedExt = "CodecZlib"
-
-    [deps.GraphIO.weakdeps]
-    CodecZlib = "944b1d66-785c-5afd-91f1-9de20f533193"
-    EzXML = "8f5d6c58-4d21-5cfd-889c-e3ad7ee6a615"
-    ParserCombinator = "fae87a5f-d1ad-5cf0-8f61-c941e1580b46"
 
 [[deps.Graphite2_jll]]
 deps = ["Artifacts", "JLLWrappers", "Libdl", "Pkg"]
