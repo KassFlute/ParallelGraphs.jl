@@ -14,7 +14,10 @@ using Graphs:
     AbstractGraph
 using Base.Threads: Atomic
 using DataStructures: Queue, enqueue!
-#using GraphIO: EdgeListFormat, loadgraph
+using GraphIO.EdgeList
+using GraphIO.EdgeList: IntEdgeListFormat, loadgraph
+using ParserCombinator
+using GraphIO.GML: GMLFormat
 
 # Function to generate a random graph with a given number of vertices and edges
 function generate_random_graph(num_vertices::Int, num_edges::Int)
@@ -25,6 +28,25 @@ function generate_random_graph(num_vertices::Int, num_edges::Int)
         add_edge!(graph, src, dst)
     end
     return graph
+end
+
+function bench(g::AbstractGraph, v::Int, name::String, class::String)
+    SUITE["BFS"][class][name]["seq"] = @benchmarkable ParallelGraphs.bfs_seq!(
+        $g, $v, parents_prepared
+    ) evals = 1 setup = (parents_prepared = fill(0, nv($g)))
+
+    SUITE["BFS"][class][name]["par"] = @benchmarkable ParallelGraphs.bfs_par!(
+        $g, $v, parents_atomic_prepared
+    ) evals = 1 setup = (parents_atomic_prepared = [Atomic{Int}(0) for _ in 1:nv($g)])
+
+    return SUITE["BFS"][class][name]["par_local"] = @benchmarkable ParallelGraphs.bfs_par_local!(
+        $g, $v, parents_atomic_prepared, queues_prepared, to_visit_prepared
+    ) evals = 1 setup = (parents_atomic_prepared = [Atomic{Int}(0) for _ in 1:nv($g)];
+    queues_prepared = Vector{Queue{Int}}();
+    foreach(1:(10 * Threads.nthreads())) do i
+        push!(queues_prepared, Queue{Int}())
+    end;
+    to_visit_prepared = zeros(Int, nv($g)))
 end
 
 BenchmarkTools.DEFAULT_PARAMETERS.samples = 10
@@ -41,103 +63,78 @@ end
 
 # Benchmark parameters
 SIZE = [10_000, 40_000, 100_000, 200_000]
-SIZE_NAMES = ["10k", "40k", "100k", "200k"]
+CLASSES = ["10k", "40k", "100k", "200k", "roads", "routers", "routers_bigger"]
 #DEGREE = [6]
 #SIZE = [200_000]
 
 #####################
 ### benchmark BFS ###
 #####################
-graphs = [Vector{AbstractGraph{Int}}() for _ in 1:length(SIZE)]
-names = Vector{String}()
-first_vertex = [Vector{Int}() for _ in 1:length(SIZE)]
+generated_graphs = [Vector{AbstractGraph{Int}}() for _ in 1:length(SIZE)]
+g_first_vertex = [Vector{Int}() for _ in 1:length(SIZE)]
+
+imported_graphs = Vector{AbstractGraph{Int}}()
+i_first_vertex = Vector{Int}()
+
+names = Dict{String,Vector{String}}("Generated" => [], "Imported" => [])
+
+function addgraphtolist(i::Int, g::AbstractGraph{Int}, n::String, v::Int)
+    push!(generated_graphs[i], g)
+    push!(names["Generated"], n)
+    return push!(g_first_vertex[i], v)
+end
 
 for i in eachindex(SIZE)
     v = SIZE[i]
-    push!(graphs[i], dorogovtsev_mendes(v))
-    push!(names, "dorogovtsev_mendes")
-    push!(first_vertex[i], 1)
 
-    push!(graphs[i], barabasi_albert(v, 4))
-    push!(names, "barabasi_albert - 4")
-    push!(first_vertex[i], 1)
-
-    push!(graphs[i], barabasi_albert(v, 20))
-    push!(names, "barabasi_albert - 20")
-    push!(first_vertex[i], 1)
-
-    push!(graphs[i], binary_tree(round(Int, log2(v)) + 1))
-    push!(names, "binary_tree")
-    push!(first_vertex[i], 1)
-
-    push!(graphs[i], double_binary_tree(round(Int, log2(v))))
-    push!(names, "double_binary_tree")
-    push!(first_vertex[i], 1)
-
-    push!(graphs[i], star_graph(v))
-    push!(names, "star_graph - center start")
-    push!(first_vertex[i], 1)
-
-    push!(graphs[i], star_graph(v))
-    push!(names, "star_graph - border start")
-    push!(first_vertex[i], 2)
+    addgraphtolist(i, dorogovtsev_mendes(v), "dorogovtsev_mendes", 1)
+    addgraphtolist(i, barabasi_albert(v, 4), "barabasi_albert - 4", 1)
+    addgraphtolist(i, barabasi_albert(v, 20), "barabasi_albert - 20", 1)
+    addgraphtolist(i, binary_tree(round(Int, log2(v)) + 1), "binary_tree", 1)
+    addgraphtolist(i, double_binary_tree(round(Int, log2(v))), "double_binary_tree", 1)
+    addgraphtolist(i, star_graph(v), "star_graph - center start", 1)
+    addgraphtolist(i, star_graph(v), "star_graph - border start", 2)
 
     N = round(Int, sqrt(sqrt(v)))
-    push!(graphs[i], grid([N, N, N, N]))
-    push!(names, "grid 4 dims")
-    push!(first_vertex[i], 1)
-
-    push!(graphs[i], path_digraph(v))
-    push!(names, "path_digraph")
-    push!(first_vertex[i], round(Int, v / 2))
+    addgraphtolist(i, grid([N, N, N, N]), "grid 4 dims", 1)
+    addgraphtolist(i, path_digraph(v), "path_digraph", round(Int, v / 2))
 end
 
 # Load graphs from files
-#push!(graphs, loadgraph("data/roads.csv", "roads",  EdgeListFormat()))
-#push!(names, "roads.csv")
-#push!(first_vertex, 135627)
-#
-#push!(graphs, loadgraph("data/routers.csv", "routers", EdgeListFormat()))
-#push!(names, "routers.csv")
-#push!(first_vertex, 8483)
+push!(imported_graphs, loadgraph("data/roads.csv", "roads", EdgeListFormat()))
+push!(names["Imported"], "roads.csv")
+push!(i_first_vertex, 1)
 
-println(length(graphs) * length(graphs[1]))
+push!(imported_graphs, loadgraph("data/routers.csv", "routers", EdgeListFormat()))
+push!(names["Imported"], "routers.csv")
+push!(i_first_vertex, 1)
+
+push!(imported_graphs, loadgraph("data/internet_routers_bigger.gml", "graph", GMLFormat()))
+push!(names["Imported"], "internet_routers_bigger.gml")
+push!(i_first_vertex, 1)
+
+println("Benchmarking BFS on imported graphs : ", length(imported_graphs))
+for i in eachindex(imported_graphs)
+    graph = imported_graphs[i]
+    name = names["Imported"][i]
+    vertex = i_first_vertex[i]
+    class = CLASSES[length(SIZE) + i]
+    bench(graph, vertex, name, class)
+end
+
+println(
+    "Benchmarking BFS on generated graphs and sizes : ",
+    length(generated_graphs[1]),
+    " x ",
+    length(generated_graphs),
+)
 for s in eachindex(SIZE)
-    for g in eachindex(graphs[s])
-        graph = graphs[s][g]
-        name = names[g]
-        vertex = first_vertex[s][g]
-
-        SUITE["BFS"][SIZE_NAMES[s]][name]["seq"] = @benchmarkable ParallelGraphs.bfs_seq!(
-            $graph, $vertex, parents_prepared
-        ) evals = 1 setup = (parents_prepared = fill(0, nv($graph)))
-
-        SUITE["BFS"][SIZE_NAMES[s]][name]["par"] = @benchmarkable ParallelGraphs.bfs_par!(
-            $graph, $vertex, parents_atomic_prepared
-        ) evals = 1 setup = (
-            parents_atomic_prepared = [Atomic{Int}(0) for _ in 1:nv($graph)]
-        )
-
-        SUITE["BFS"][SIZE_NAMES[s]][name]["par_local"] = @benchmarkable ParallelGraphs.bfs_par_local!(
-            $graph, $vertex, parents_atomic_prepared, queues_prepared, to_visit_prepared
-        ) evals = 1 setup = (
-            parents_atomic_prepared = [Atomic{Int}(0) for _ in 1:nv($graph)];
-            queues_prepared = Vector{Queue{Int}}();
-            foreach(1:(10 * Threads.nthreads())) do i
-                push!(queues_prepared, Queue{Int}())
-            end;
-            to_visit_prepared = zeros(Int, nv($graph))
-        )
-
-        #SUITE["BFS"][name]["par_local_probably_slower"] = @benchmarkable ParallelGraphs.bfs_par_local_probably_slower!(
-        #    $graph, $vertex, parents_atomic_prepared, chnl_prepared
-        #) evals = 1 setup = (parents_atomic_prepared = [Atomic{Int}(0) for _ in 1:nv($graph)];
-        #chnl_prepared = Channel{Int}(nv($graph)))
-
-        #SUITE["BFS"][name]["par_local_unsafe"] = @benchmarkable ParallelGraphs.bfs_par_local_unsafe!(
-        #    $graph, $vertex, parents_atomic_prepared, queues_prepared
-        #) evals = 1 setup = (parents_atomic_prepared = [Atomic{Int}(0) for _ in 1:nv($graph)];
-        #queues_prepared = [Queue{Int}() for _ in 1:Threads.nthreads()])
+    for g in eachindex(generated_graphs[s])
+        graph = generated_graphs[s][g]
+        name = names["Generated"][g]
+        vertex = g_first_vertex[s][g]
+        class = CLASSES[s]
+        bench(graph, vertex, name, class)
     end
 end
 

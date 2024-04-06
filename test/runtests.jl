@@ -6,6 +6,11 @@ using Test
 using ParallelGraphs
 using Graphs
 
+using GraphIO.EdgeList
+using GraphIO.EdgeList: IntEdgeListFormat, loadgraph
+using ParserCombinator
+using GraphIO.GML: GMLFormat
+
 @testset verbose = true "ParallelGraphs.jl" begin
     @testset "Aqua" begin
         Aqua.test_all(ParallelGraphs; ambiguities=false)
@@ -290,6 +295,31 @@ using Graphs
                 for bfs_par in bfs_parallel_algorithms
                     bfs_par(graph, 1)
                 end
+
+                graph = loadgraph("../benchmark/data/roads.csv", "roads", EdgeListFormat())
+                print("roads : ", nv(graph), " vertices, ", ne(graph), " edges\n")
+                for bfs_par in bfs_parallel_algorithms
+                    bfs_par(graph, 1)
+                end
+
+                graph = loadgraph(
+                    "../benchmark/data/routers.csv", "routers", EdgeListFormat()
+                )
+                print("routers : ", nv(graph), " vertices, ", ne(graph), " edges\n")
+                for bfs_par in bfs_parallel_algorithms
+                    bfs_par(graph, 1)
+                end
+
+                graph = loadgraph(
+                    "../benchmark/data/internet_routers_bigger.gml", "graph", GMLFormat()
+                )
+                print(
+                    "internet_routers_bigger.gml : ",
+                    nv(graph),
+                    " vertices, ",
+                    ne(graph),
+                    " edges\n",
+                )
             end
         end
 
