@@ -8,7 +8,7 @@ See also: [bfs_par](@ref)
 function bfs_par!(
     graph::AbstractGraph, source::T, parents::Array{Atomic{T}}
 ) where {T<:Integer}
-    if source > nv(graph) || source < 1
+    if !has_vertex(graph, source)
         throw(ArgumentError("source vertex is not in the graph"))
     end
 
@@ -49,7 +49,7 @@ end
 function bfs_par_local_unsafe!(
     graph::AbstractGraph, source::T, parents::Array{Atomic{T}}, queues::Vector{Queue{T}}
 ) where {T<:Integer}
-    if source > nv(graph) || source < 1
+    if !has_vertex(graph, source)
         throw(ArgumentError("source vertex is not in the graph"))
     end
 
@@ -105,7 +105,7 @@ function bfs_par_local!(
     queues::Vector{Queue{T}},
     to_visit::Vector{T},
 ) where {T<:Integer}
-    if source > nv(graph) || source < 1
+    if !has_vertex(graph, source)
         throw(ArgumentError("source vertex is not in the graph"))
     end
 

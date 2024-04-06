@@ -8,6 +8,7 @@ using Graphs:
     SimpleDiGraph,
     neighbors,
     add_edge!,
+    has_vertex,
     nv,
     dorogovtsev_mendes
 
