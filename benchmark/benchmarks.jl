@@ -66,7 +66,7 @@ first_vertex = [Vector{Int}() for _ in 1:length(SIZE)]
 
 for i in eachindex(SIZE)
     v = SIZE[i]
-    push!(tab, dorogovtsev_mendes(v))
+    push!(graphs[i], dorogovtsev_mendes(v))
     push!(names, "dorogovtsev_mendes")
     push!(first_vertex[i], 1)
 
