@@ -207,7 +207,7 @@ end
 
 Run a parallel BFS traversal on a graph and return the parent vertices of each vertex in the BFS tree in a new Array.
 
-See also: [bfs_par!](@ref), [bfs_par_local](@ref)
+See also: [bfs_par!](@ref)
 """
 function bfs_par(graph::AbstractGraph, source::T) where {T<:Integer}
     if nv(graph) == 0
@@ -243,7 +243,7 @@ end
 Run a parallel BFS traversal on a graph and return the parent vertices of each vertex in the BFS tree in a new Array.
 (alternative versino)
 
-See also: [bfs_par_local!](@ref), [bfs_par](@ref)
+See also: [bfs_par_local!](@ref)
 """
 function bfs_par_local(graph::AbstractGraph, source::T) where {T<:Integer}
     if nv(graph) == 0
