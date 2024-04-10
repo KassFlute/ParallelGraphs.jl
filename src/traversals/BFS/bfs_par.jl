@@ -98,6 +98,13 @@ function bfs_par_local_unsafe!(
     return nothing
 end
 
+"""
+    bfs_par_local!(graph::AbstractGraph, source::T, parents::Array{Atomic{T}}, queues::Vector{Queue{T}}, to_visit::Vector{T})
+
+Run a parallel BFS traversal on a graph and return the parent vertices of each vertex in the BFS tree in the given 'parents' Array.
+
+See also: [bfs_par_local](@ref)
+"""
 function bfs_par_local!(
     graph::AbstractGraph,
     source::T,
@@ -200,7 +207,7 @@ end
 
 Run a parallel BFS traversal on a graph and return the parent vertices of each vertex in the BFS tree in a new Array.
 
-See also: [bfs_par!](@ref)
+See also: [bfs_par!](@ref), [bfs_par_local](@ref)
 """
 function bfs_par(graph::AbstractGraph, source::T) where {T<:Integer}
     if nv(graph) == 0
@@ -230,6 +237,14 @@ function bfs_par_local_unsafe(graph::AbstractGraph, source::T) where {T<:Integer
     return parents
 end
 
+"""
+    bfs_par_local(graph::AbstractGraph, source::T)
+
+Run a parallel BFS traversal on a graph and return the parent vertices of each vertex in the BFS tree in a new Array.
+(alternative versino)
+
+See also: [bfs_par_local!](@ref), [bfs_par](@ref)
+"""
 function bfs_par_local(graph::AbstractGraph, source::T) where {T<:Integer}
     if nv(graph) == 0
         return T[]
