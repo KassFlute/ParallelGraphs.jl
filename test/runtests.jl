@@ -313,6 +313,13 @@ using GraphIO.GML: GMLFormat
                 graph = loadgraph(
                     "../benchmark/data/internet_routers_bigger.gml", "graph", GMLFormat()
                 )
+                print(
+                    "internet_routers_bigger.gml : ",
+                    nv(graph),
+                    " vertices, ",
+                    ne(graph),
+                    " edges\n",
+                )
             end
         end
 

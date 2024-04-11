@@ -31,6 +31,7 @@ function generate_random_graph(num_vertices::Int, num_edges::Int)
 end
 
 function bench(g::AbstractGraph, v::Int, name::String, class::String)
+    ## Our implementations
     SUITE["BFS"][class][name]["seq"] = @benchmarkable ParallelGraphs.bfs_seq!(
         $g, $v, parents_prepared
     ) evals = 1 setup = (parents_prepared = fill(0, nv($g)))
@@ -39,7 +40,7 @@ function bench(g::AbstractGraph, v::Int, name::String, class::String)
         $g, $v, parents_atomic_prepared
     ) evals = 1 setup = (parents_atomic_prepared = [Atomic{Int}(0) for _ in 1:nv($g)])
 
-    return SUITE["BFS"][class][name]["par_local"] = @benchmarkable ParallelGraphs.bfs_par_local!(
+    SUITE["BFS"][class][name]["par_local"] = @benchmarkable ParallelGraphs.bfs_par_local!(
         $g, $v, parents_atomic_prepared, queues_prepared, to_visit_prepared
     ) evals = 1 setup = (parents_atomic_prepared = [Atomic{Int}(0) for _ in 1:nv($g)];
     queues_prepared = Vector{Queue{Int}}();
@@ -47,6 +48,14 @@ function bench(g::AbstractGraph, v::Int, name::String, class::String)
         push!(queues_prepared, Queue{Int}())
     end;
     to_visit_prepared = zeros(Int, nv($g)))
+
+    ## Graphs.jl implementation
+    return SUITE["BFS"][class][name]["graphs.jl_par"] = @benchmarkable ParallelGraphs.bfs_tree!(
+        next_prepared, $g, $v, parents_prepared
+    ) evals = 1 setup = (
+        next_prepared = ParallelGraphs.ThreadQueue(Int, nv($g));
+        parents_prepared = [Atomic{Int}(0) for i in 1:nv($g)]
+    )
 end
 
 BenchmarkTools.DEFAULT_PARAMETERS.samples = 10
@@ -64,12 +73,27 @@ end
 # Benchmark parameters
 SIZE = [10_000, 40_000, 100_000, 200_000]
 CLASSES = ["10k", "40k", "100k", "200k", "roads", "routers", "routers_bigger"]
+# SIZE = [10_000]
+# CLASSES = ["10k", "roads", "routers", "routers_bigger"]
 #DEGREE = [6]
 #SIZE = [200_000]
 
 #####################
 ### benchmark BFS ###
 #####################
+generated_graphs = [Vector{AbstractGraph{Int}}() for _ in 1:length(SIZE)]
+g_first_vertex = [Vector{Int}() for _ in 1:length(SIZE)]
+
+imported_graphs = Vector{AbstractGraph{Int}}()
+i_first_vertex = Vector{Int}()
+
+names = Dict{String,Vector{String}}("Generated" => [], "Imported" => [])
+
+function addgraphtolist(i::Int, g::AbstractGraph{Int}, n::String, v::Int)
+    push!(generated_graphs[i], g)
+    push!(names["Generated"], n)
+    return push!(g_first_vertex[i], v)
+end
 generated_graphs = [Vector{AbstractGraph{Int}}() for _ in 1:length(SIZE)]
 g_first_vertex = [Vector{Int}() for _ in 1:length(SIZE)]
 
@@ -129,6 +153,12 @@ println(
     length(generated_graphs),
 )
 for s in eachindex(SIZE)
+    for g in eachindex(generated_graphs[s])
+        graph = generated_graphs[s][g]
+        name = names["Generated"][g]
+        vertex = g_first_vertex[s][g]
+        class = CLASSES[s]
+        bench(graph, vertex, name, class)
     for g in eachindex(generated_graphs[s])
         graph = generated_graphs[s][g]
         name = names["Generated"][g]

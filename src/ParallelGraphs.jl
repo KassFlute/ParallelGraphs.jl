@@ -19,6 +19,7 @@ using OhMyThreads: tforeach
 include("utils.jl")
 include("traversals/BFS/bfs_seq.jl")
 include("traversals/BFS/bfs_par.jl")
+include("traversals/BFS/bfs_graphs.jl")
 
 export bfs_seq,
     bfs_par,
