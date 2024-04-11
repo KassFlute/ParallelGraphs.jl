@@ -41,15 +41,17 @@ end
 function split_chunks!(
     v::Vector{T}, nb_chunks::Int, size::Int, res::Vector{Vector{T}}
 ) where {T}
-    if size % nb_chunks == 0
-        chunk_size = div(size, nb_chunks)
-    else
-        chunk_size = div(size, nb_chunks - 1)
+    chunk_size = div(size, nb_chunks)
+    if chunk_size % nb_chunks != 0
+        chunk_size += 1
     end
-
     for i in 1:(nb_chunks - 1)
-        res[i] = view(v, ((i - 1) * chunk_size + 1):(i * chunk_size))
+        res[i] = view(v, ((i - 1) * chunk_size + 1):min(size, (i * chunk_size)))
     end
-    res[nb_chunks] = view(v, ((nb_chunks - 1) * chunk_size + 1):size)
+    if (nb_chunks - 1) * chunk_size < size
+        res[nb_chunks] = view(v, ((nb_chunks - 1) * chunk_size + 1):size)
+    else
+        res[nb_chunks] = Vector{T}()
+    end
     return nothing
 end
