@@ -31,6 +31,7 @@ function generate_random_graph(num_vertices::Int, num_edges::Int)
 end
 
 function bench(g::AbstractGraph, v::Int, name::String, class::String)
+    ## Our implementations
     SUITE["BFS"][class][name]["seq"] = @benchmarkable ParallelGraphs.bfs_seq!(
         $g, $v, parents_prepared
     ) evals = 1 setup = (parents_prepared = fill(0, nv($g)))
@@ -39,7 +40,7 @@ function bench(g::AbstractGraph, v::Int, name::String, class::String)
         $g, $v, parents_atomic_prepared
     ) evals = 1 setup = (parents_atomic_prepared = [Atomic{Int}(0) for _ in 1:nv($g)])
 
-    return SUITE["BFS"][class][name]["par_local"] = @benchmarkable ParallelGraphs.bfs_par_local!(
+    SUITE["BFS"][class][name]["par_local"] = @benchmarkable ParallelGraphs.bfs_par_local!(
         $g, $v, parents_atomic_prepared, queues_prepared, to_visit_prepared
     ) evals = 1 setup = (parents_atomic_prepared = [Atomic{Int}(0) for _ in 1:nv($g)];
     queues_prepared = Vector{Queue{Int}}();
@@ -47,6 +48,14 @@ function bench(g::AbstractGraph, v::Int, name::String, class::String)
         push!(queues_prepared, Queue{Int}())
     end;
     to_visit_prepared = zeros(Int, nv($g)))
+
+    ## Graphs.jl implementation
+    return SUITE["BFS"][class][name]["graphs.jl_par"] = @benchmarkable ParallelGraphs.bfs_tree!(
+        next_prepared, $g, $v, parents_prepared
+    ) evals = 1 setup = (
+        next_prepared = ParallelGraphs.ThreadQueue(Int, nv($g));
+        parents_prepared = [Atomic{Int}(0) for i in 1:nv($g)]
+    )
 end
 
 BenchmarkTools.DEFAULT_PARAMETERS.samples = 10
@@ -64,6 +73,8 @@ end
 # Benchmark parameters
 SIZE = [10_000, 40_000, 100_000, 200_000]
 CLASSES = ["10k", "40k", "100k", "200k", "roads", "routers", "routers_bigger"]
+# SIZE = [10_000]
+# CLASSES = ["10k", "roads", "routers", "routers_bigger"]
 #DEGREE = [6]
 #SIZE = [200_000]
 
@@ -101,15 +112,15 @@ for i in eachindex(SIZE)
 end
 
 # Load graphs from files
-push!(imported_graphs, loadgraph("data/roads.csv", "roads", EdgeListFormat()))
+push!(imported_graphs, loadgraph("benchmark/data/roads.csv", "roads", EdgeListFormat()))
 push!(names["Imported"], "roads.csv")
 push!(i_first_vertex, 1)
 
-push!(imported_graphs, loadgraph("data/routers.csv", "routers", EdgeListFormat()))
+push!(imported_graphs, loadgraph("benchmark/data/routers.csv", "routers", EdgeListFormat()))
 push!(names["Imported"], "routers.csv")
 push!(i_first_vertex, 1)
 
-push!(imported_graphs, loadgraph("data/internet_routers_bigger.gml", "graph", GMLFormat()))
+push!(imported_graphs, loadgraph("benchmark/data/internet_routers_bigger.gml", "graph", GMLFormat()))
 push!(names["Imported"], "internet_routers_bigger.gml")
 push!(i_first_vertex, 1)
 
