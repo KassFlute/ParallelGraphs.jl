@@ -20,66 +20,27 @@ using GraphIO.EdgeList: IntEdgeListFormat, loadgraph
 using ParserCombinator
 using GraphIO.GML: GMLFormat
 
-# Function to generate a random graph with a given number of vertices and edges
-function generate_random_graph(num_vertices::Int, num_edges::Int)
-    graph = SimpleGraph(num_vertices)
-    for _ in 1:num_edges
-        src = rand(1:num_vertices)
-        dst = rand(1:num_vertices)
-        add_edge!(graph, src, dst)
-    end
-    return graph
-end
+#######################
+### Benchmark setup ###
+#######################
 
-function bench(g::AbstractGraph, v::Int, name::String, class::String)
-    ## Our implementations
-    SUITE["BFS"][class][name]["seq"] = @benchmarkable ParallelGraphs.bfs_seq!(
-        $g, $v, parents_prepared
-    ) evals = 1 setup = (parents_prepared = fill(0, nv($g)))
-
-    SUITE["BFS"][class][name]["par"] = @benchmarkable ParallelGraphs.bfs_par!(
-        $g, $v, parents_atomic_prepared
-    ) evals = 1 setup = (parents_atomic_prepared = [Atomic{Int}(0) for _ in 1:nv($g)])
-
-    SUITE["BFS"][class][name]["par_local"] = @benchmarkable ParallelGraphs.bfs_par_local!(
-        $g, $v, parents_atomic_prepared, queues_prepared, to_visit_prepared
-    ) evals = 1 setup = (parents_atomic_prepared = [Atomic{Int}(0) for _ in 1:nv($g)];
-    queues_prepared = Vector{Queue{Int}}();
-    foreach(1:(10 * Threads.nthreads())) do i
-        push!(queues_prepared, Queue{Int}())
-    end;
-    to_visit_prepared = zeros(Int, nv($g)))
-
-    ## Graphs.jl implementation
-    return SUITE["BFS"][class][name]["graphs.jl_par"] = @benchmarkable GP.bfs_tree!(
-        next_prepared, $g, $v, parents_prepared
-    ) evals = 1 setup = (next_prepared = GP.ThreadQueue(Int, nv($g));
-    parents_prepared = [Atomic{Int}(0) for i in 1:nv($g)])
-end
-
+# BenchmarkTools parameters
 BenchmarkTools.DEFAULT_PARAMETERS.samples = 10
 BenchmarkTools.DEFAULT_PARAMETERS.seconds = Inf
 SUITE = BenchmarkGroup()
-SUITE["rand"] = @benchmarkable rand(10)
 SUITE["BFS"] = BenchmarkGroup()
 
+# Check if Julia was started with more than one thread
 if Threads.nthreads() == 1
     @warn "!!! Julia started with: $(Threads.nthreads()) threads, consider starting Julia with more threads to benchmark parallel code: `julia -t auto`."
 else
     @warn "Julia started with: $(Threads.nthreads()) threads."
 end
 
-# Benchmark parameters
-SIZE = [10_000, 40_000, 100_000, 200_000]
-CLASSES = ["10k", "40k", "100k", "200k", "roads", "routers", "routers_bigger"]
-# SIZE = [10_000]
-# CLASSES = ["10k", "roads", "routers", "routers_bigger"]
-#DEGREE = [6]
-#SIZE = [200_000]
+# Benchmark graphs parameters
+SIZE = [10_000, 40_000, 100_000, 200_000] # sizes in number of vertices
+CLASSES = ["10k", "40k", "100k", "200k", "roads", "routers", "routers_bigger"] # classes of graphs for outputs
 
-#####################
-### benchmark BFS ###
-#####################
 generated_graphs = [Vector{AbstractGraph{Int}}() for _ in 1:length(SIZE)]
 g_first_vertex = [Vector{Int}() for _ in 1:length(SIZE)]
 
@@ -126,13 +87,49 @@ push!(
 push!(names["Imported"], "internet_routers_bigger.gml")
 push!(i_first_vertex, 1)
 
+#####################
+### benchmark BFS ###
+#####################
+"""
+    bench_BFS(g::AbstractGraph, v::Int, name::String, class::String)
+
+Create a benchmark for BFS on a graph `g` with a starting vertex `v` and store it in the global `SUITE` variable.
+"""
+function bench_BFS(g::AbstractGraph, v::Int, name::String, class::String)
+    # Our sequential
+    SUITE["BFS"][class][name]["seq"] = @benchmarkable ParallelGraphs.bfs_seq!(
+        $g, $v, parents_prepared
+    ) evals = 1 setup = (parents_prepared = fill(0, nv($g)))
+
+    # Our parallel similar to Graphs.jl
+    SUITE["BFS"][class][name]["par"] = @benchmarkable ParallelGraphs.bfs_par!(
+        $g, $v, parents_atomic_prepared
+    ) evals = 1 setup = (parents_atomic_prepared = [Atomic{Int}(0) for _ in 1:nv($g)])
+
+    # Our parallel with local queues
+    SUITE["BFS"][class][name]["par_local"] = @benchmarkable ParallelGraphs.bfs_par_local!(
+        $g, $v, parents_atomic_prepared, queues_prepared, to_visit_prepared
+    ) evals = 1 setup = (parents_atomic_prepared = [Atomic{Int}(0) for _ in 1:nv($g)];
+    queues_prepared = Vector{Queue{Int}}();
+    foreach(1:(10 * Threads.nthreads())) do i
+        push!(queues_prepared, Queue{Int}())
+    end;
+    to_visit_prepared = zeros(Int, nv($g)))
+
+    ## Graphs.jl implementation
+    return SUITE["BFS"][class][name]["graphs.jl_par"] = @benchmarkable GP.bfs_tree!(
+        next_prepared, $g, $v, parents_prepared
+    ) evals = 1 setup = (next_prepared = GP.ThreadQueue(Int, nv($g));
+    parents_prepared = [Atomic{Int}(0) for i in 1:nv($g)])
+end
+
 println("Benchmarking BFS on imported graphs : ", length(imported_graphs))
 for i in eachindex(imported_graphs)
     graph = imported_graphs[i]
     name = names["Imported"][i]
     vertex = i_first_vertex[i]
     class = CLASSES[length(SIZE) + i]
-    bench(graph, vertex, name, class)
+    bench_BFS(graph, vertex, name, class)
 end
 
 println(
@@ -147,21 +144,9 @@ for s in eachindex(SIZE)
         name = names["Generated"][g]
         vertex = g_first_vertex[s][g]
         class = CLASSES[s]
-        bench(graph, vertex, name, class)
+        bench_BFS(graph, vertex, name, class)
     end
 end
-
-# for i in eachindex(graphs)
-#     g = graphs[i]
-#     parents = fill(0, nv(g))
-#     parents_atomic = [Atomic{Int}(0) for _ in 1:nv(g)]
-#     SUITE["BFS"][names[i]][bfs_seq] = @benchmarkable ParallelGraphs.bfs_seq!(
-#         $g, $START_VERTEX, parents_prepared
-#     ) evals = 1 setup = (parents_prepared = fill(0, nv($g)))
-#     SUITE["BFS"][names[i]][bfs_par] = @benchmarkable ParallelGraphs.bfs_par!(
-#         $g, $START_VERTEX, parents_atomic_prepared
-#     ) evals = 1 setup = (parents_atomic_prepared = [Atomic{Int}(0) for _ in 1:nv($g)])
-# end
 
 # If a cache of tuned parameters already exists, use it, otherwise, tune and cache
 # the benchmark parameters. Reusing cached parameters is faster and more reliable
