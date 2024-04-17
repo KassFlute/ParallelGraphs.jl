@@ -12,6 +12,7 @@ using Graphs:
     grid,
     path_digraph,
     AbstractGraph
+import Graphs.Parallel as GP
 using Base.Threads: Atomic
 using DataStructures: Queue, enqueue!
 using GraphIO.EdgeList
@@ -50,12 +51,10 @@ function bench(g::AbstractGraph, v::Int, name::String, class::String)
     to_visit_prepared = zeros(Int, nv($g)))
 
     ## Graphs.jl implementation
-    return SUITE["BFS"][class][name]["graphs.jl_par"] = @benchmarkable ParallelGraphs.bfs_tree!(
+    return SUITE["BFS"][class][name]["graphs.jl_par"] = @benchmarkable GP.bfs_tree!(
         next_prepared, $g, $v, parents_prepared
-    ) evals = 1 setup = (
-        next_prepared = ParallelGraphs.ThreadQueue(Int, nv($g));
-        parents_prepared = [Atomic{Int}(0) for i in 1:nv($g)]
-    )
+    ) evals = 1 setup = (next_prepared = GP.ThreadQueue(Int, nv($g));
+    parents_prepared = [Atomic{Int}(0) for i in 1:nv($g)])
 end
 
 BenchmarkTools.DEFAULT_PARAMETERS.samples = 10
@@ -120,7 +119,10 @@ push!(imported_graphs, loadgraph("benchmark/data/routers.csv", "routers", EdgeLi
 push!(names["Imported"], "routers.csv")
 push!(i_first_vertex, 1)
 
-push!(imported_graphs, loadgraph("benchmark/data/internet_routers_bigger.gml", "graph", GMLFormat()))
+push!(
+    imported_graphs,
+    loadgraph("benchmark/data/internet_routers_bigger.gml", "graph", GMLFormat()),
+)
 push!(names["Imported"], "internet_routers_bigger.gml")
 push!(i_first_vertex, 1)
 
