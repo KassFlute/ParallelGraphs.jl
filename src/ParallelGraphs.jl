@@ -42,16 +42,7 @@ include("traversals/BFS/bfs_seq.jl")
 include("traversals/BFS/bfs_par.jl")
 include("traversals/BFS/bfs_BLAS.jl")
 
-export bfs_seq,
-    bfs_par,
-    bfs_BLAS,
-    bfs_seq!,
-    bfs_par!,
-    bfs_par_local!,
-    bfs_BLAS!
-    bfs_par_local_unsafe!,
-    bfs_par_local_probably_slower!,
-    ThreadQueue,
-    t_push!
+export bfs_seq, bfs_par, bfs_BLAS, bfs_seq!, bfs_par!, bfs_par_local!, bfs_BLAS!
+bfs_par_local_unsafe!, bfs_par_local_probably_slower!, ThreadQueue, t_push!
 
 end

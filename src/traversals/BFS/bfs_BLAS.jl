@@ -28,16 +28,18 @@ function bfs_BLAS!(
     p[source] = source
     f[source] = source
     z = GBVector{T}(length(p); fill=zero(T))
-
+    depth = 0
     for _ in 1:length(p)
+        depth += 1
         mul!(f, A, f, (any, secondi); mask=~p)
         extract!(f, z, 1:length(p); mask=p)
         extract!(p, f, 1:length(p); mask=~p)
         apply!(rowindex, f, f)
-        if reduce(&, f == zero(T))
+        if reduce(max, f) == 0
+            println("BFS ended at depth: ", depth)
             return nothing
         end
     end
-
+    println("BFS at N : this is bad!")
     return nothing
 end

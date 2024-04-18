@@ -11,7 +11,9 @@ using Graphs:
     star_graph,
     grid,
     path_digraph,
-    AbstractGraph
+    AbstractGraph,
+    adjacency_matrix
+using SuiteSparseGraphBLAS: GBVector, GBMatrix
 import Graphs.Parallel as GP
 using Base.Threads: Atomic
 using DataStructures: Queue, enqueue!
@@ -115,6 +117,13 @@ function bench_BFS(g::AbstractGraph, v::Int, name::String, class::String)
         push!(queues_prepared, Queue{Int}())
     end;
     to_visit_prepared = zeros(Int, nv($g)))
+
+    ## Our GraphBLAS based implementation
+    A = GBMatrix(adjacency_matrix(g)')
+    SUITE["BFS"][class][name]["BLAS"] = @benchmarkable ParallelGraphs.bfs_BLAS!($A, $v, p, f) evals =
+        1 setup = (p = GBVector{Int}(nv($g); fill=zero(Int));
+    f = GBVector{Int}(nv($g); fill=zero(Int));
+    )
 
     ## Graphs.jl implementation
     return SUITE["BFS"][class][name]["graphs.jl_par"] = @benchmarkable GP.bfs_tree!(
