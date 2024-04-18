@@ -5,6 +5,7 @@ using Test
 
 using ParallelGraphs
 using Graphs
+using SuiteSparseGraphBLAS: GBVector, GBMatrix
 
 using GraphIO.EdgeList
 using GraphIO.EdgeList: IntEdgeListFormat, loadgraph
@@ -102,12 +103,7 @@ using GraphIO.GML: GMLFormat
 
         @testset "BFS Parallel" begin
             ### TESTED PARALLEL BFS CANDIDATES ###
-            bfs_parallel_algorithms = [
-                bfs_par,
-                ParallelGraphs.bfs_par_local_unsafe,
-                ParallelGraphs.bfs_par_local,
-                ParallelGraphs.bfs_par_local_probably_slower,
-            ]
+            bfs_parallel_algorithms = [bfs_par, bfs_BLAS]
 
             @testset "Undirected graph" begin
                 ### Empty graph ###
