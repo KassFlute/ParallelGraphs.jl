@@ -40,7 +40,6 @@ using SuiteSparseGraphBLAS:
 include("utils.jl")
 include("traversals/BFS/bfs_seq.jl")
 include("traversals/BFS/bfs_par.jl")
-include("traversals/BFS/bfs_BLAS.jl")
 
 export bfs_seq,
     bfs_par,
