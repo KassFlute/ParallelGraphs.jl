@@ -13,7 +13,8 @@ using Graphs:
     path_digraph,
     AbstractGraph,
     adjacency_matrix
-using SuiteSparseGraphBLAS: GBVector, GBMatrix
+using SuiteSparseGraphBLAS:
+    GBVector, GBMatrix, setstorageorder!, RowMajor, mul!, extract!, gbset
 import Graphs.Parallel as GP
 using Base.Threads: Atomic
 using DataStructures: Queue, enqueue!
@@ -31,6 +32,7 @@ BenchmarkTools.DEFAULT_PARAMETERS.samples = 10
 BenchmarkTools.DEFAULT_PARAMETERS.seconds = Inf
 SUITE = BenchmarkGroup()
 SUITE["BFS"] = BenchmarkGroup()
+gbset(:nthreads, Threads.nthreads())
 
 # Check if Julia was started with more than one thread
 if Threads.nthreads() == 1
@@ -40,8 +42,8 @@ else
 end
 
 # Benchmark graphs parameters
-SIZE = [10_000, 40_000, 100_000, 200_000] # sizes in number of vertices
-CLASSES = ["10k", "40k", "100k", "200k", "roads", "routers", "routers_bigger"] # classes of graphs for outputs
+SIZE = [10_000, 40_000, 100_000, 200_000] # sizes in number of vertices
+CLASSES = ["10k", "40k", "100k", "200k", "roads", "routers", "routers_bigger"] # classes of graphs for outputs
 
 generated_graphs = [Vector{AbstractGraph{Int}}() for _ in 1:length(SIZE)]
 g_first_vertex = [Vector{Int}() for _ in 1:length(SIZE)]
@@ -61,13 +63,12 @@ for i in eachindex(SIZE)
     v = SIZE[i]
 
     addgraphtolist(i, dorogovtsev_mendes(v), "dorogovtsev_mendes", 1)
-    addgraphtolist(i, barabasi_albert(v, 4), "barabasi_albert - 4", 1)
+    addgraphtolist(i, barabasi_albert(v, 2), "barabasi_albert - 2", 1)
     addgraphtolist(i, barabasi_albert(v, 20), "barabasi_albert - 20", 1)
     addgraphtolist(i, binary_tree(round(Int, log2(v)) + 1), "binary_tree", 1)
     addgraphtolist(i, double_binary_tree(round(Int, log2(v))), "double_binary_tree", 1)
     addgraphtolist(i, star_graph(v), "star_graph - center start", 1)
     addgraphtolist(i, star_graph(v), "star_graph - border start", 2)
-
     N = round(Int, sqrt(sqrt(v)))
     addgraphtolist(i, grid([N, N, N, N]), "grid 4 dims", 1)
     addgraphtolist(i, path_digraph(v), "path_digraph", round(Int, v / 2))
@@ -103,10 +104,10 @@ function bench_BFS(g::AbstractGraph, v::Int, name::String, class::String)
         $g, $v, parents_prepared
     ) evals = 1 setup = (parents_prepared = fill(0, nv($g)))
 
-    # Our parallel similar to Graphs.jl
-    SUITE["BFS"][class][name]["par"] = @benchmarkable ParallelGraphs.bfs_par!(
-        $g, $v, parents_atomic_prepared
-    ) evals = 1 setup = (parents_atomic_prepared = [Atomic{Int}(0) for _ in 1:nv($g)])
+    ## Our parallel similar to Graphs.jl
+    #SUITE["BFS"][class][name]["par"] = @benchmarkable ParallelGraphs.bfs_par!(
+    #    $g, $v, parents_atomic_prepared
+    #) evals = 1 setup = (parents_atomic_prepared = [Atomic{Int}(0) for _ in 1:nv($g)])
 
     # Our parallel with local queues
     SUITE["BFS"][class][name]["par_local"] = @benchmarkable ParallelGraphs.bfs_par_local!(
@@ -119,11 +120,13 @@ function bench_BFS(g::AbstractGraph, v::Int, name::String, class::String)
     to_visit_prepared = zeros(Int, nv($g)))
 
     ## Our GraphBLAS based implementation
-    A = GBMatrix(adjacency_matrix(g)')
-    SUITE["BFS"][class][name]["BLAS"] = @benchmarkable ParallelGraphs.bfs_BLAS!($A, $v, p, f) evals =
-        1 setup = (p = GBVector{Int}(nv($g); fill=zero(Int));
-    f = GBVector{Int}(nv($g); fill=zero(Int));
-    )
+
+    A_T = GBMatrix{Int}(adjacency_matrix(g; dir=:in))
+    wait(A_T)
+    SUITE["BFS"][class][name]["BLAS"] = @benchmarkable ParallelGraphs.bfs_BLAS!(
+        $A_T, $v, p, f
+    ) evals = 1 setup = (p = GBVector{Int}(nv($g); fill=zero(Int));
+    f = GBVector{Int}(nv($g); fill=zero(Int)))
 
     ## Graphs.jl implementation
     return SUITE["BFS"][class][name]["graphs.jl_par"] = @benchmarkable GP.bfs_tree!(
@@ -138,8 +141,10 @@ for i in eachindex(imported_graphs)
     name = names["Imported"][i]
     vertex = i_first_vertex[i]
     class = CLASSES[length(SIZE) + i]
+    print(". ")
     bench_BFS(graph, vertex, name, class)
 end
+println(" ")
 
 println(
     "Benchmarking BFS on generated graphs and sizes : ",
@@ -153,8 +158,10 @@ for s in eachindex(SIZE)
         name = names["Generated"][g]
         vertex = g_first_vertex[s][g]
         class = CLASSES[s]
+        print(". ")
         bench_BFS(graph, vertex, name, class)
     end
+    println(" ")
 end
 
 # If a cache of tuned parameters already exists, use it, otherwise, tune and cache
