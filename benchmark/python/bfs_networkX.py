@@ -1,6 +1,6 @@
 import networkx as nx
 import csv
-import time
+import timeit
 
 def load_graph_from_csv(filepath):
     """
@@ -19,34 +19,28 @@ def bfs_benchmark(graph, start_node):
     """
     Benchmark the speed of BFS on the given graph starting from a specified node.
     """
-    start_time = time.time()
-    bfs_tree = nx.bfs_tree(graph, start_node)
-    end_time = time.time()
-    return end_time - start_time
+    def bfs():
+        return nx.bfs_tree(graph, start_node)
+    
+    time_taken = timeit.timeit(bfs, number=2)  # run more for more precision
+    return time_taken
 
+def run_bfs_benchmark(filepath, start_node):
+    """
+    Load graph from CSV file and run BFS benchmark.
+    """
+    print(f"Loading graph from {filepath}...")
+    graph = load_graph_from_csv(filepath)
+    if start_node not in graph.nodes():
+        print(f"Node {start_node} not found in the graph.")
+        return
+    print(f"Running BFS on {filepath} with {graph.number_of_nodes()} nodes from node {start_node}...")
+    bfs_time = bfs_benchmark(graph, start_node)
+    print(f"BFS benchmark completed, execution time: {bfs_time} seconds")
 
 if __name__ == "__main__":
-
     # roads.csv
-    filepath = "benchmark/data/roads.csv" # "../data/roads.csv" if run from python folder
-    print(f"Loading graph from {filepath}...")
-    graph = load_graph_from_csv(filepath)
-    start_node = "140000"
-    if start_node not in graph.nodes():
-        print(f"Node {start_node} not found in the graph.")
-        exit()
-    print(f"Running BFS on {filepath} with {graph.number_of_nodes()} nodes from node {start_node}...")
-    bfs_time = bfs_benchmark(graph, start_node)
-    print(f"BFS benchmark completed, execution time: {bfs_time}  seconds")
+    run_bfs_benchmark("benchmark/data/roads.csv", "140000")
 
     # twitch user
-    filepath = "benchmark/data/large_twitch_edges.csv" # "../data/roads.csv" if run from python folder
-    print(f"Loading graph from {filepath}...")
-    graph = load_graph_from_csv(filepath)
-    start_node = "0"
-    if start_node not in graph.nodes():
-        print(f"Node {start_node} not found in the graph.")
-        exit()
-    print(f"Running BFS on {filepath} with {graph.number_of_nodes()} nodes from node {start_node}...")
-    bfs_time = bfs_benchmark(graph, start_node)
-    print(f"BFS benchmark completed, execution time: {bfs_time}  seconds")
+    run_bfs_benchmark("benchmark/data/large_twitch_edges.csv", "0")
