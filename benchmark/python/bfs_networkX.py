@@ -29,8 +29,21 @@ if __name__ == "__main__":
 
     # roads.csv
     filepath = "benchmark/data/roads.csv" # "../data/roads.csv" if run from python folder
+    print(f"Loading graph from {filepath}...")
     graph = load_graph_from_csv(filepath)
     start_node = "140000"
+    if start_node not in graph.nodes():
+        print(f"Node {start_node} not found in the graph.")
+        exit()
+    print(f"Running BFS on {filepath} with {graph.number_of_nodes()} nodes from node {start_node}...")
+    bfs_time = bfs_benchmark(graph, start_node)
+    print(f"BFS benchmark completed, execution time: {bfs_time}  seconds")
+
+    # twitch user
+    filepath = "benchmark/data/large_twitch_edges.csv" # "../data/roads.csv" if run from python folder
+    print(f"Loading graph from {filepath}...")
+    graph = load_graph_from_csv(filepath)
+    start_node = "0"
     if start_node not in graph.nodes():
         print(f"Node {start_node} not found in the graph.")
         exit()
