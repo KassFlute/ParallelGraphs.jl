@@ -1,6 +1,7 @@
 /Manifest.toml
 # /docs/Manifest.toml
 /docs/build/
+benchmark/data/com-friendster.ungraph.txt
 .vscode/
 Q.md
 
