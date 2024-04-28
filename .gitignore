@@ -6,3 +6,4 @@ Q.md
 
 /.benchmarkci
 /benchmark/*.json
+benchmark/data/com-friendster.ungraph.txt
