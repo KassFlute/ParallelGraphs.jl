@@ -42,7 +42,11 @@ using SuiteSparseGraphBLAS:
     rowindex,
     colindex,
     assign!,
-    extract!
+    extract!,
+    Monoid,
+    Descriptor
+
+using SuiteSparseGraphBLAS.BinaryOps: ∨
 
 include("utils.jl")
 include("traversals/BFS/bfs_seq.jl")

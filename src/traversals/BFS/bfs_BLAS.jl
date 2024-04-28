@@ -10,26 +10,27 @@ function bfs_BLAS(graph::AbstractGraph, source::T) where {T<:Integer}
 
     n = nv(graph)
     p = GBVector{T}(n; fill=zero(T))
-    f = GBVector{T}(n; fill=zero(T))
-    A_T = GBMatrix{T}(adjacency_matrix(graph; dir=:in))
+    f = GBVector{Bool}(n; fill=false)
+    A_T = GBMatrix{Bool}(Bool.(adjacency_matrix(graph; dir=:in)))
     bfs_BLAS!(A_T, source, p, f)
 
     return Array(p)
 end
 
 function bfs_BLAS!(
-    A_T::GBMatrix{T}, source::T, p::GBVector{T}, f::GBVector{T}
+    A_T::GBMatrix{Bool}, source::T, p::GBVector{T}, f::GBVector{Bool}
 ) where {T<:Integer}
     p[source] = source
-    f[source] = source
+    f[source] = true
+    desc = Descriptor(;nthreads=6)
     temp = GBVector{T}(length(p); fill=zero(T))
     for _ in 1:length(p)
         empty!(temp)
         mul!(temp, A_T, f, (any, secondi); mask=~p)
         extract!(p, temp, 1:length(p); mask=temp)
         empty!(f)
-        apply!(rowindex, f, temp; mask=temp)
-        if reduce(max, f) == 0
+        apply!(identity, f, temp; mask=temp)
+        if !reduce(∨, f)
             return nothing
         end
     end

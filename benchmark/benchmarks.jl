@@ -14,7 +14,7 @@ using Graphs:
     AbstractGraph,
     adjacency_matrix
 using SuiteSparseGraphBLAS:
-    GBVector, GBMatrix, setstorageorder!, RowMajor, mul!, extract!, gbset
+    GBVector, GBMatrix, setstorageorder!, RowMajor, mul!, extract!, gbset, format, Monoid
 import Graphs.Parallel as GP
 using Base.Threads: Atomic
 using DataStructures: Queue, enqueue!
@@ -121,12 +121,11 @@ function bench_BFS(g::AbstractGraph, v::Int, name::String, class::String)
 
     ## Our GraphBLAS based implementation
 
-    A_T = GBMatrix{Int}(adjacency_matrix(g; dir=:in))
-    wait(A_T)
+    A_T = GBMatrix{Bool}(Bool.(adjacency_matrix(g; dir=:in)))
     SUITE["BFS"][class][name]["BLAS"] = @benchmarkable ParallelGraphs.bfs_BLAS!(
         $A_T, $v, p, f
     ) evals = 1 setup = (p = GBVector{Int}(nv($g); fill=zero(Int));
-    f = GBVector{Int}(nv($g); fill=zero(Int)))
+    f = GBVector{Bool}(nv($g); fill=false))
 
     ## Graphs.jl implementation
     return SUITE["BFS"][class][name]["graphs.jl_par"] = @benchmarkable GP.bfs_tree!(
