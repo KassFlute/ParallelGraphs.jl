@@ -140,20 +140,31 @@ function bfs_par_local!(
         end
 
         last_elem = 0
-        fill!(to_visit, zero(T))
-        for i in 1:granularity
-            q = queues[i]
-            last = length(q) + last_elem
-            #println("splicing : ", length(q), " from ", last_elem, " to ", last)
-            splice!(to_visit, (last_elem + 1):last, collect(q))
-            last_elem = last
-            empty!(q)
+        accumulator = [0 for _ in 1:(granularity + 1)]
+        for i in 2:granularity
+            accumulator[i] = accumulator[i - 1] + length(queues[i - 1])
+            last_elem += length(queues[i - 1])
+        end
+        accumulator[granularity + 1] =
+            accumulator[granularity] + length(queues[granularity])
 
-            #l = length(q)
-            #for j in (last_elem + 1):(last_elem + l)
-            #    to_visit[j] = dequeue!(q)
-            #end
-            #last_elem += l
+        last_elem += length(queues[granularity])
+
+        fill!(to_visit, zero(T))
+        @sync for i in 1:granularity
+            @spawn begin
+                q = queues[i]
+
+                #last = length(q) + last_elem
+                ##println("splicing : ", length(q), " from ", last_elem, " to ", last)
+                #splice!(to_visit, (last_elem + 1):last, collect(q))
+                #last_elem = last
+                #empty!(q)
+
+                for j in (accumulator[i] + 1):accumulator[i + 1]
+                    to_visit[j] = dequeue!(q)
+                end
+            end
 
             #while !isempty(q)
             #    last_elem += 1
