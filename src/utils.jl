@@ -48,7 +48,7 @@ function split_chunks!(
     end
 
     for i in 1:(nb_chunks - 1)
-        res[i] = view(v, ((i - 1) * chunk_size + 1):(i * chunk_size))
+        res[i] = view(v, ((i - 1) * chunk_size + 1):(i * chunk_size)) # TODO : find faster way to do this
     end
     res[nb_chunks] = view(v, ((nb_chunks - 1) * chunk_size + 1):size)
     return nothing

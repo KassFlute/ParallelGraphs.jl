@@ -76,7 +76,7 @@ end
 
 # Load graphs from files
 push!(imported_graphs, loadgraph("benchmark/data/large_twitch_edges.csv", "twitch", EdgeListFormat()))
-push!(names["Imported"], "roads.csv")
+push!(names["Imported"], "twitch.csv")
 push!(i_first_vertex, 1)
 
 #push!(imported_graphs, loadgraph("benchmark/data/routers.csv", "routers", EdgeListFormat()))
