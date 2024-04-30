@@ -42,8 +42,8 @@ else
 end
 
 # Benchmark graphs parameters
-SIZE = [10_000, 40_000, 100_000, 200_000] # sizes in number of vertices
-CLASSES = ["10k", "40k", "100k", "200k", "roads", "routers", "routers_bigger"] # classes of graphs for outputs
+SIZE = [30_000, 300_000, 3_000_000] # sizes in number of vertices
+CLASSES = ["30k", "300k", "3M", "twitch"] # classes of graphs for outputs
 
 generated_graphs = [Vector{AbstractGraph{Int}}() for _ in 1:length(SIZE)]
 g_first_vertex = [Vector{Int}() for _ in 1:length(SIZE)]
@@ -62,33 +62,33 @@ end
 for i in eachindex(SIZE)
     v = SIZE[i]
 
-    addgraphtolist(i, dorogovtsev_mendes(v), "dorogovtsev_mendes", 1)
+    #addgraphtolist(i, dorogovtsev_mendes(v), "dorogovtsev_mendes", 1)
     addgraphtolist(i, barabasi_albert(v, 2), "barabasi_albert - 2", 1)
-    addgraphtolist(i, barabasi_albert(v, 20), "barabasi_albert - 20", 1)
+    addgraphtolist(i, barabasi_albert(v, 8), "barabasi_albert - 8", 1)
     addgraphtolist(i, binary_tree(round(Int, log2(v)) + 1), "binary_tree", 1)
-    addgraphtolist(i, double_binary_tree(round(Int, log2(v))), "double_binary_tree", 1)
+    #addgraphtolist(i, double_binary_tree(round(Int, log2(v))), "double_binary_tree", 1)
     addgraphtolist(i, star_graph(v), "star_graph - center start", 1)
     addgraphtolist(i, star_graph(v), "star_graph - border start", 2)
     N = round(Int, sqrt(sqrt(v)))
     addgraphtolist(i, grid([N, N, N, N]), "grid 4 dims", 1)
-    addgraphtolist(i, path_digraph(v), "path_digraph", round(Int, v / 2))
+    #addgraphtolist(i, path_digraph(v), "path_digraph", round(Int, v / 2))
 end
 
 # Load graphs from files
-push!(imported_graphs, loadgraph("benchmark/data/roads.csv", "roads", EdgeListFormat()))
+push!(imported_graphs, loadgraph("benchmark/data/large_twitch_edges.csv", "twitch", EdgeListFormat()))
 push!(names["Imported"], "roads.csv")
 push!(i_first_vertex, 1)
 
-push!(imported_graphs, loadgraph("benchmark/data/routers.csv", "routers", EdgeListFormat()))
-push!(names["Imported"], "routers.csv")
-push!(i_first_vertex, 1)
-
-push!(
-    imported_graphs,
-    loadgraph("benchmark/data/internet_routers_bigger.gml", "graph", GMLFormat()),
-)
-push!(names["Imported"], "internet_routers_bigger.gml")
-push!(i_first_vertex, 1)
+#push!(imported_graphs, loadgraph("benchmark/data/routers.csv", "routers", EdgeListFormat()))
+#push!(names["Imported"], "routers.csv")
+#push!(i_first_vertex, 1)
+#
+#push!(
+#    imported_graphs,
+#    loadgraph("benchmark/data/internet_routers_bigger.gml", "graph", GMLFormat()),
+#)
+#push!(names["Imported"], "internet_routers_bigger.gml")
+#push!(i_first_vertex, 1)
 
 #####################
 ### benchmark BFS ###
