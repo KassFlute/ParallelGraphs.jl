@@ -138,9 +138,11 @@ using GraphIO.GML: GMLFormat
                 end
 
                 # invalid source
-                @test_throws ArgumentError bfs_par(graph, 0)
-                @test_throws ArgumentError bfs_par(graph, -1)
-                @test_throws ArgumentError bfs_par(graph, 5)
+                for bfs_par in bfs_parallel_algorithms
+                    @test_throws ArgumentError bfs_par(graph, 0)
+                    @test_throws ArgumentError bfs_par(graph, -1)
+                    @test_throws ArgumentError bfs_par(graph, 5)
+                end
 
                 ### Not-connected graph ###
                 adjacency_matrix = [
