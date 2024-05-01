@@ -101,7 +101,7 @@ using GraphIO.GML: GMLFormat
             end
         end
 
-        @testset "BFS Parallel" begin
+        @testset "BFS Parallel/BLAS" begin
             ### TESTED PARALLEL BFS CANDIDATES ###
             bfs_parallel_algorithms = [bfs_par, bfs_BLAS]
 
