@@ -47,9 +47,8 @@ CLASSES = [
     "30k",
     "300k",
     "3M",
-    "roads",
     "twitch_user",
-    #"live_journal"
+    #"live journal",
 ]
 
 generated_graphs = [Vector{AbstractGraph{Int}}() for _ in 1:length(SIZE)]
@@ -105,9 +104,7 @@ push!(i_first_vertex, 1)
 
 #push!(
 #    imported_graphs,
-#    loadgraph(
-#        "benchmark/data/LiveJournal.txt", "live journal", EdgeListFormat()
-#    ),
+#    loadgraph("benchmark/data/LiveJournal.txt", "live journal", EdgeListFormat()),
 #)
 #push!(names["Imported"], "live journal.txt")
 #push!(i_first_vertex, 1)
@@ -143,7 +140,7 @@ function bench_BFS(g::AbstractGraph, v::Int, name::String, class::String)
 
     ## Our GraphBLAS based implementation
 
-    A_T = GBMatrix{Bool}(Bool.(adjacency_matrix(g; dir=:in)))
+    A_T = GBMatrix{Bool}((adjacency_matrix(graph, Bool; dir=:in)))
     SUITE["BFS"][class][name]["BLAS"] = @benchmarkable ParallelGraphs.bfs_BLAS!(
         $A_T, $v, p, f
     ) evals = 1 setup = (p = GBVector{Int}(nv($g); fill=zero(Int));
