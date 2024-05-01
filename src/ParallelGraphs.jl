@@ -7,6 +7,7 @@ using Graphs:
     SimpleGraph,
     SimpleDiGraph,
     neighbors,
+    all_neighbors,
     add_edge!,
     has_vertex,
     nv,

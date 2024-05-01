@@ -374,8 +374,8 @@ using GraphIO.GML: GMLFormat
                 order2 = [6, 5, 4, 3, 2, 1]
 
                 # Color the graph with different orders
-                coloring1 = greedy_coloring(graph, order1)
-                coloring2 = greedy_coloring(graph, order2)
+                coloring1 = ParallelGraphs.greedy_coloring(graph, order1)
+                coloring2 = ParallelGraphs.greedy_coloring(graph, order2)
 
                 # Ensure all vertices are colored
                 @test all(coloring1.colors .!= 0)
@@ -408,8 +408,8 @@ using GraphIO.GML: GMLFormat
                 order2 = [4, 3, 2, 1]
 
                 # Color the graph with different orders
-                coloring1 = greedy_coloring(graph, order1)
-                coloring2 = greedy_coloring(graph, order2)
+                coloring1 = ParallelGraphs.greedy_coloring(graph, order1)
+                coloring2 = ParallelGraphs.greedy_coloring(graph, order2)
 
                 # Ensure all vertices are colored
                 @test all(coloring1.colors .!= 0)
