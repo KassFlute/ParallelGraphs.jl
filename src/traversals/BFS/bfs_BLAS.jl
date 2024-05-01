@@ -1,4 +1,9 @@
 
+"""
+    bfs_BLAS(graph::AbstractGraph, source::T) where {T<:Integer}
+
+Perform a BFS traversal on a graph `graph` starting from vertex `source` using GraphBLAS operations.
+"""
 function bfs_BLAS(graph::AbstractGraph, source::T) where {T<:Integer}
     if nv(graph) == 0
         return T[]
@@ -17,6 +22,11 @@ function bfs_BLAS(graph::AbstractGraph, source::T) where {T<:Integer}
     return Array(p)
 end
 
+"""
+    bfs_BLAS!(A_T::GBMatrix{Bool}, source::T, p::GBVector{T}, f::GBVector{Bool}) where {T<:Integer}
+
+Perform a BFS traversal on a graph represented by its transpose adjacency matrix `A_T` starting from vertex `source` using GraphBLAS operations.
+"""
 function bfs_BLAS!(
     A_T::GBMatrix{Bool}, source::T, p::GBVector{T}, f::GBVector{Bool}
 ) where {T<:Integer}
