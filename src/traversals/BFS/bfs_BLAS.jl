@@ -22,7 +22,7 @@ function bfs_BLAS!(
 ) where {T<:Integer}
     p[source] = source
     f[source] = true
-    desc = Descriptor(;nthreads=6)
+    desc = Descriptor(; nthreads=6)
     temp = GBVector{T}(length(p); fill=zero(T))
     for _ in 1:length(p)
         empty!(temp)

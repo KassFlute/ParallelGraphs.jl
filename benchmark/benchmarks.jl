@@ -75,7 +75,10 @@ for i in eachindex(SIZE)
 end
 
 # Load graphs from files
-push!(imported_graphs, loadgraph("benchmark/data/large_twitch_edges.csv", "twitch", EdgeListFormat()))
+push!(
+    imported_graphs,
+    loadgraph("benchmark/data/large_twitch_edges.csv", "twitch", EdgeListFormat()),
+)
 push!(names["Imported"], "twitch.csv")
 push!(i_first_vertex, 1)
 
