@@ -358,75 +358,75 @@ using GraphIO.GML: GMLFormat
                 end
             end
 
-            # @testset "Not-connected graph" begin
-            #     adjacency_matrix = [
-            #         0 1 0 0 0 0
-            #         1 0 1 0 0 0
-            #         0 1 0 0 0 0
-            #         0 0 0 0 1 0
-            #         0 0 0 1 0 1
-            #         0 0 0 0 1 0
-            #     ]
-            #     graph = SimpleGraph(adjacency_matrix)
+            @testset "Not-connected graph" begin
+                adjacency_matrix = [
+                    0 1 0 0 0 0
+                    1 0 1 0 0 0
+                    0 1 0 0 0 0
+                    0 0 0 0 1 0
+                    0 0 0 1 0 1
+                    0 0 0 0 1 0
+                ]
+                graph = SimpleGraph(adjacency_matrix)
 
-            #     # Test coloring with different orders
-            #     order1 = [1, 2, 3, 4, 5, 6]
-            #     order2 = [6, 5, 4, 3, 2, 1]
+                # Test coloring with different orders
+                order1 = [1, 2, 3, 4, 5, 6]
+                order2 = [6, 5, 4, 3, 2, 1]
 
-            #     # Color the graph with different orders
-            #     coloring1 = greedy_coloring(graph, order1)
-            #     coloring2 = greedy_coloring(graph, order2)
+                # Color the graph with different orders
+                coloring1 = greedy_coloring(graph, order1)
+                coloring2 = greedy_coloring(graph, order2)
 
-            #     # Ensure all vertices are colored
-            #     @test all(coloring1.colors .!= 0)
-            #     @test all(coloring2.colors .!= 0)
+                # Ensure all vertices are colored
+                @test all(coloring1.colors .!= 0)
+                @test all(coloring2.colors .!= 0)
 
-            #     # Ensure the number of colors used is minimal
-            #     @test coloring1.num_colors == 2
-            #     @test coloring2.num_colors == 2
+                # Ensure the number of colors used is minimal
+                @test coloring1.num_colors == 2
+                @test coloring2.num_colors == 2
 
-            #     # Ensure adjacent vertices have different colors
-            #     for v in 1:nv(graph)
-            #         for neighbor in neighbors(graph, v)
-            #             @test coloring1.colors[v] != coloring1.colors[neighbor]
-            #             @test coloring2.colors[v] != coloring2.colors[neighbor]
-            #         end
-            #     end
-            # end
+                # Ensure adjacent vertices have different colors
+                for v in 1:nv(graph)
+                    for neighbor in neighbors(graph, v)
+                        @test coloring1.colors[v] != coloring1.colors[neighbor]
+                        @test coloring2.colors[v] != coloring2.colors[neighbor]
+                    end
+                end
+            end
 
-            # @testset "Basic directed graph" begin
-            #     adjacency_matrix = [
-            #         0 1 0 0
-            #         0 0 1 0
-            #         0 0 0 1
-            #         0 1 0 0
-            #     ]
-            #     graph = SimpleDiGraph(adjacency_matrix)
+            @testset "Basic directed graph" begin
+                adjacency_matrix = [
+                    0 1 0 0
+                    0 0 1 0
+                    0 0 0 1
+                    0 1 0 0
+                ]
+                graph = SimpleDiGraph(adjacency_matrix)
 
-            #     # Test coloring with different orders
-            #     order1 = [1, 2, 3, 4]
-            #     order2 = [4, 3, 2, 1]
+                # Test coloring with different orders
+                order1 = [1, 2, 3, 4]
+                order2 = [4, 3, 2, 1]
 
-            #     # Color the graph with different orders
-            #     coloring1 = greedy_coloring(graph, order1)
-            #     coloring2 = greedy_coloring(graph, order2)
+                # Color the graph with different orders
+                coloring1 = greedy_coloring(graph, order1)
+                coloring2 = greedy_coloring(graph, order2)
 
-            #     # Ensure all vertices are colored
-            #     @test all(coloring1.colors .!= 0)
-            #     @test all(coloring2.colors .!= 0)
+                # Ensure all vertices are colored
+                @test all(coloring1.colors .!= 0)
+                @test all(coloring2.colors .!= 0)
 
-            #     # Ensure the number of colors used is minimal
-            #     @test coloring1.num_colors == 2
-            #     @test coloring2.num_colors == 2
+                # Ensure the number of colors used is minimal
+                @test coloring1.num_colors == 2
+                @test coloring2.num_colors == 2
 
-            #     # Ensure adjacent vertices have different colors
-            #     for v in 1:nv(graph)
-            #         for neighbor in outneighbors(graph, v)
-            #             @test coloring1.colors[v] != coloring1.colors[neighbor]
-            #             @test coloring2.colors[v] != coloring2.colors[neighbor]
-            #         end
-            #     end
-            # end
+                # Ensure adjacent vertices have different colors
+                for v in 1:nv(graph)
+                    for neighbor in outneighbors(graph, v)
+                        @test coloring1.colors[v] != coloring1.colors[neighbor]
+                        @test coloring2.colors[v] != coloring2.colors[neighbor]
+                    end
+                end
+            end
         end
 
         @testset "utils" begin
