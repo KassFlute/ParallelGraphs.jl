@@ -1,8 +1,11 @@
 /Manifest.toml
 # /docs/Manifest.toml
 /docs/build/
+benchmark/data/com-friendster.ungraph.txt
 .vscode/
 Q.md
 
 /.benchmarkci
 /benchmark/*.json
+benchmark/data/com-friendster.ungraph.txt
+benchmark/data/LiveJournal.txt
