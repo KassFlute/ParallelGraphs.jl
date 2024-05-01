@@ -77,7 +77,7 @@ function bfs_par_local!(
     last_elem = 1
     chunks = Vector{Vector{T}}(undef, granularity)
     while (last_elem > 0)
-        #tforeach(local_exploration!, view(to_visit, 1:(first_free_index - 1))) # explores vertices in parallel
+        # explores vertices in parallel
         if last_elem > granularity
             split_chunks!(to_visit, granularity, last_elem, chunks)
             @sync for i in 1:granularity
@@ -87,6 +87,7 @@ function bfs_par_local!(
             local_exploration!(Vector[view(to_visit, 1:last_elem)][1], queues[1])
         end
 
+        # Store the lenghts of the queues in the accumulator to parallelize the copying
         last_elem = 0
         accumulator = [0 for _ in 1:(granularity + 1)]
         for i in 2:granularity
@@ -95,9 +96,9 @@ function bfs_par_local!(
         end
         accumulator[granularity + 1] =
             accumulator[granularity] + length(queues[granularity])
-
         last_elem += length(queues[granularity])
 
+        # Empty the to_visit array and fill it with the elements of the queues
         fill!(to_visit, zero(T))
         @sync for i in 1:granularity
             @spawn begin
@@ -113,11 +114,6 @@ function bfs_par_local!(
                     to_visit[j] = dequeue!(q)
                 end
             end
-
-            #while !isempty(q)
-            #    last_elem += 1
-            #    to_visit[last_elem] = dequeue!(q)
-            #end
         end
     end
     return nothing
