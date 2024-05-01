@@ -103,7 +103,7 @@ using GraphIO.GML: GMLFormat
 
         @testset "BFS Parallel/BLAS" begin
             ### TESTED PARALLEL BFS CANDIDATES ###
-            bfs_parallel_algorithms = [bfs_par, bfs_BLAS]
+            bfs_parallel_algorithms = [bfs_par, bfs_par_local, bfs_BLAS]
 
             @testset "Undirected graph" begin
                 ### Empty graph ###
