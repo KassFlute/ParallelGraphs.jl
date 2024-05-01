@@ -100,7 +100,7 @@ push!(
     ),
 )
 push!(names["Imported"], "large_twitch_edges.csv")
-push!(i_first_vertex, 1
+push!(i_first_vertex, 1)
 
 #####################
 ### benchmark BFS ###
