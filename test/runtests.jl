@@ -368,6 +368,14 @@ using GraphIO.GML: GMLFormat
             @test ParallelGraphs.t_getindex(q, 1) == 1
             @test ParallelGraphs.t_getindex(q, 2) == 2
             @test ParallelGraphs.t_getindex(q, 3) == 3
+
+            # split_chunks!
+            v = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
+            nb_chunks = 2
+            size = length(v)
+            res = Vector{Vector{Int}}(undef, nb_chunks)
+            ParallelGraphs.split_chunks!(v, nb_chunks, size, res)
+            @test res == [[1, 2, 3, 4, 5], [6, 7, 8, 9, 10]]
         end
     end
 end
