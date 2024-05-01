@@ -19,6 +19,7 @@ using OhMyThreads: tforeach
 include("utils.jl")
 include("traversals/BFS/bfs_seq.jl")
 include("traversals/BFS/bfs_par.jl")
+include("traversals/coloring/greedy_coloring_seq.jl")
 
 export bfs_seq,
     bfs_par,
@@ -28,6 +29,7 @@ export bfs_seq,
     bfs_par_local_unsafe!,
     bfs_par_local_probably_slower!,
     ThreadQueue,
-    t_push!
+    t_push!,
+    shuffle_and_color_n_times
 
 end
