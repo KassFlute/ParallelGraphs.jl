@@ -16,7 +16,7 @@ function bfs_BLAS(graph::AbstractGraph, source::T) where {T<:Integer}
     n = nv(graph)
     p = GBVector{T}(n; fill=zero(T))
     f = GBVector{Bool}(n; fill=false)
-    A_T = GBMatrix{Bool}(Bool.(adjacency_matrix(graph; dir=:in)))
+    A_T = GBMatrix{Bool}((adjacency_matrix(graph, Bool; dir=:in)))
     bfs_BLAS!(A_T, source, p, f)
 
     return Array(p)
