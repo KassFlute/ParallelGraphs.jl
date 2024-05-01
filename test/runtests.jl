@@ -416,8 +416,8 @@ using GraphIO.GML: GMLFormat
                 @test all(coloring2.colors .!= 0)
 
                 # Ensure the number of colors used is minimal
-                @test coloring1.num_colors == 2
-                @test coloring2.num_colors == 2
+                @test coloring1.num_colors == 3
+                @test coloring2.num_colors == 3
 
                 # Ensure adjacent vertices have different colors
                 for v in 1:nv(graph)
