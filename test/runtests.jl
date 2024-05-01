@@ -358,6 +358,16 @@ using GraphIO.GML: GMLFormat
 
             ParallelGraphs.t_popfirst!(q)
             @test ParallelGraphs.t_isempty(q)
+
+            # t_getindex
+            q = ParallelGraphs.ThreadQueue(Int, 5)
+            ParallelGraphs.t_push!(q, 1)
+            ParallelGraphs.t_push!(q, 2)
+            ParallelGraphs.t_push!(q, 3)
+
+            @test ParallelGraphs.t_getindex(q, 1) == 1
+            @test ParallelGraphs.t_getindex(q, 2) == 2
+            @test ParallelGraphs.t_getindex(q, 3) == 3
         end
     end
 end
