@@ -43,7 +43,14 @@ end
 
 # Benchmark graphs parameters
 SIZE = [30_000, 300_000, 3_000_000] # sizes in number of vertices
-CLASSES = ["30k", "300k", "3M", "roads", "routers", "routers_bigger", "twitch_user"] # classes of graphs for outputs
+CLASSES = [
+    "30k",
+    "300k",
+    "3M",
+    "roads",
+    "twitch_user",
+    #"live_journal"
+]
 
 generated_graphs = [Vector{AbstractGraph{Int}}() for _ in 1:length(SIZE)]
 g_first_vertex = [Vector{Int}() for _ in 1:length(SIZE)]
@@ -75,23 +82,17 @@ for i in eachindex(SIZE)
 end
 
 # Load graphs from files
-push!(
-    imported_graphs,
-    loadgraph("benchmark/data/large_twitch_edges.csv", "twitch", EdgeListFormat()),
-)
-push!(names["Imported"], "twitch.csv")
-push!(i_first_vertex, 1)
 
-push!(imported_graphs, loadgraph("benchmark/data/routers.csv", "routers", EdgeListFormat()))
-push!(names["Imported"], "routers.csv")
-push!(i_first_vertex, 1)
-
-push!(
-    imported_graphs,
-    loadgraph("benchmark/data/internet_routers_bigger.gml", "graph", GMLFormat()),
-)
-push!(names["Imported"], "internet_routers_bigger.gml")
-push!(i_first_vertex, 1)
+#push!(imported_graphs, loadgraph("benchmark/data/routers.csv", "routers", EdgeListFormat()))
+#push!(names["Imported"], "routers.csv")
+#push!(i_first_vertex, 1)
+#
+#push!(
+#    imported_graphs,
+#    loadgraph("benchmark/data/internet_routers_bigger.gml", "graph", GMLFormat()),
+#)
+#push!(names["Imported"], "internet_routers_bigger.gml")
+#push!(i_first_vertex, 1)
 
 push!(
     imported_graphs,
@@ -101,6 +102,15 @@ push!(
 )
 push!(names["Imported"], "large_twitch_edges.csv")
 push!(i_first_vertex, 1)
+
+#push!(
+#    imported_graphs,
+#    loadgraph(
+#        "benchmark/data/LiveJournal.txt", "live journal", EdgeListFormat()
+#    ),
+#)
+#push!(names["Imported"], "live journal.txt")
+#push!(i_first_vertex, 1)
 
 #####################
 ### benchmark BFS ###
