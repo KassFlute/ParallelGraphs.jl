@@ -40,7 +40,7 @@ function bfs_BLAS!(
         extract!(p, temp, 1:length(p); mask=temp)
         empty!(f)
         apply!(identity, f, temp; mask=temp)
-        if !reduce(v, f)
+        if !reduce(∨, f)
             return nothing
         end
     end
