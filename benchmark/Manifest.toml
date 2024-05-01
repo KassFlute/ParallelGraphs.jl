@@ -2,7 +2,7 @@
 
 julia_version = "1.10.2"
 manifest_format = "2.0"
-project_hash = "69cfa6bab3cdd252285c9d66842c5b77d88f19cb"
+project_hash = "e8d4515aa2d45b0e7101501345f974d637fed693"
 
 [[deps.AbstractFFTs]]
 deps = ["LinearAlgebra"]
@@ -118,6 +118,12 @@ version = "1.5.0"
 git-tree-sha1 = "2dc09997850d68179b69dafb58ae806167a32b1b"
 uuid = "d1d4a3ce-64b1-5f1a-9ba4-7e7e69966f35"
 version = "0.1.8"
+
+[[deps.Blobs]]
+deps = ["MacroTools", "Test"]
+git-tree-sha1 = "9e1755d64788e59f5bccedba98f5fa543db38eba"
+uuid = "163b9779-6631-5f90-a265-3de947924de8"
+version = "0.5.1"
 
 [[deps.Bzip2_jll]]
 deps = ["Artifacts", "JLLWrappers", "Libdl", "Pkg"]
@@ -559,6 +565,12 @@ git-tree-sha1 = "3336abae9a713d2210bb57ab484b1e065edd7d23"
 uuid = "aacddb02-875f-59d6-b918-886e6ef4fbf8"
 version = "3.0.2+0"
 
+[[deps.KLU]]
+deps = ["LinearAlgebra", "SparseArrays", "SuiteSparse_jll"]
+git-tree-sha1 = "884c2968c2e8e7e6bf5956af88cb46aa745c854b"
+uuid = "ef3ab10e-7fda-4108-b977-705223b18434"
+version = "0.4.1"
+
 [[deps.KernelDensity]]
 deps = ["Distributions", "DocStringExtensions", "FFTW", "Interpolations", "StatsBase"]
 git-tree-sha1 = "fee018a29b60733876eb557804b5b109dd3dd8a7"
@@ -860,7 +872,7 @@ uuid = "90014a1f-27ba-587c-ab20-58faa44d9150"
 version = "0.11.31"
 
 [[deps.ParallelGraphs]]
-deps = ["DataStructures", "Graphs", "OhMyThreads"]
+deps = ["DataStructures", "Graphs", "OhMyThreads", "SuiteSparseGraphBLAS"]
 path = ".."
 uuid = "4cdd4def-cb7e-45de-811d-e1afe4aa22cb"
 version = "1.0.0-DEV"
@@ -1020,6 +1032,12 @@ version = "0.4.0+0"
 uuid = "ea8e919c-243c-51af-8825-aaa63cd721ce"
 version = "0.7.0"
 
+[[deps.SSGraphBLAS_jll]]
+deps = ["Artifacts", "CompilerSupportLibraries_jll", "JLLWrappers", "Libdl", "Pkg"]
+git-tree-sha1 = "d5d657ff69e6de4b6059dc3516bbd87f2e79e59b"
+uuid = "7ed9a814-9cab-54e9-8e9e-d9e95b4d61b1"
+version = "7.2.0+0"
+
 [[deps.Scratch]]
 deps = ["Dates"]
 git-tree-sha1 = "3bac05bc7e74a75fd9cba4295cde4045d9fe2386"
@@ -1135,9 +1153,20 @@ git-tree-sha1 = "3b1dcbf62e469a67f6733ae493401e53d92ff543"
 uuid = "f3b207a7-027a-5e70-b257-86293d7955fd"
 version = "0.15.7"
 
+[[deps.StorageOrders]]
+git-tree-sha1 = "ab7bc30c8c4a1227953c65be6d997b7cc0c9789d"
+uuid = "e9177fbf-8fde-426c-9425-4eed0f22262a"
+version = "0.3.2"
+
 [[deps.SuiteSparse]]
 deps = ["Libdl", "LinearAlgebra", "Serialization", "SparseArrays"]
 uuid = "4607b0f0-06f3-5cda-b6b1-a6196a1729e9"
+
+[[deps.SuiteSparseGraphBLAS]]
+deps = ["Blobs", "ChainRulesCore", "KLU", "Libdl", "LinearAlgebra", "MacroTools", "Preferences", "Random", "SSGraphBLAS_jll", "Serialization", "SparseArrays", "SpecialFunctions", "StorageOrders", "SuiteSparse"]
+git-tree-sha1 = "f6267ba5a4e0290d2c0997cd24ef47cc8f4384b3"
+uuid = "c2e53296-7b14-11e9-1210-bddfa8111e1d"
+version = "0.10.0"
 
 [[deps.SuiteSparse_jll]]
 deps = ["Artifacts", "Libdl", "libblastrampoline_jll"]

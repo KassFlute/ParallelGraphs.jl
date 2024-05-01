@@ -5,6 +5,7 @@ using Test
 
 using ParallelGraphs
 using Graphs
+using SuiteSparseGraphBLAS: GBVector, GBMatrix
 
 using GraphIO.EdgeList
 using GraphIO.EdgeList: IntEdgeListFormat, loadgraph
@@ -100,14 +101,9 @@ using GraphIO.GML: GMLFormat
             end
         end
 
-        @testset "BFS Parallel" begin
+        @testset "BFS Parallel/BLAS" begin
             ### TESTED PARALLEL BFS CANDIDATES ###
-            bfs_parallel_algorithms = [
-                bfs_par,
-                ParallelGraphs.bfs_par_local_unsafe,
-                ParallelGraphs.bfs_par_local,
-                ParallelGraphs.bfs_par_local_probably_slower,
-            ]
+            bfs_parallel_algorithms = [bfs_par, bfs_par_local, bfs_BLAS]
 
             @testset "Undirected graph" begin
                 ### Empty graph ###
@@ -142,9 +138,11 @@ using GraphIO.GML: GMLFormat
                 end
 
                 # invalid source
-                @test_throws ArgumentError bfs_par(graph, 0)
-                @test_throws ArgumentError bfs_par(graph, -1)
-                @test_throws ArgumentError bfs_par(graph, 5)
+                for bfs_par in bfs_parallel_algorithms
+                    @test_throws ArgumentError bfs_par(graph, 0)
+                    @test_throws ArgumentError bfs_par(graph, -1)
+                    @test_throws ArgumentError bfs_par(graph, 5)
+                end
 
                 ### Not-connected graph ###
                 adjacency_matrix = [
@@ -466,6 +464,24 @@ using GraphIO.GML: GMLFormat
 
             ParallelGraphs.t_popfirst!(q)
             @test ParallelGraphs.t_isempty(q)
+
+            # t_getindex
+            q = ParallelGraphs.ThreadQueue(Int, 5)
+            ParallelGraphs.t_push!(q, 1)
+            ParallelGraphs.t_push!(q, 2)
+            ParallelGraphs.t_push!(q, 3)
+
+            @test ParallelGraphs.t_getindex(q, 1) == 1
+            @test ParallelGraphs.t_getindex(q, 2) == 2
+            @test ParallelGraphs.t_getindex(q, 3) == 3
+
+            # split_chunks!
+            v = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
+            nb_chunks = 2
+            size = length(v)
+            res = Vector{Vector{Int}}(undef, nb_chunks)
+            ParallelGraphs.split_chunks!(v, nb_chunks, size, res)
+            @test res == [[1, 2, 3, 4, 5], [6, 7, 8, 9, 10]]
         end
     end
 end
