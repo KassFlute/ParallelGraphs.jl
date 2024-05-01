@@ -39,7 +39,9 @@ end
 
 # Benchmark graphs parameters
 SIZE = [10_000, 40_000, 100_000, 200_000] # sizes in number of vertices
-CLASSES = ["10k", "40k", "100k", "200k", "roads", "routers", "routers_bigger", "twitch_user"] # classes of graphs for outputs
+CLASSES = [
+    "10k", "40k", "100k", "200k", "roads", "routers", "routers_bigger", "twitch_user"
+] # classes of graphs for outputs
 
 generated_graphs = [Vector{AbstractGraph{Int}}() for _ in 1:length(SIZE)]
 g_first_vertex = [Vector{Int}() for _ in 1:length(SIZE)]
