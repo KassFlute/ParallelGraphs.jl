@@ -56,7 +56,13 @@ include("traversals/BFS/bfs_BLAS.jl")
 include("traversals/coloring/greedy_coloring_seq.jl")
 
 export bfs_seq,
-    bfs_par, bfs_par_local, bfs_BLAS, bfs_seq!, bfs_par!, bfs_par_local!, bfs_BLAS!, shuffle_and_color_n_times
-
+    bfs_par,
+    bfs_par_local,
+    bfs_BLAS,
+    bfs_seq!,
+    bfs_par!,
+    bfs_par_local!,
+    bfs_BLAS!,
+    shuffle_and_color_n_times
 
 end
