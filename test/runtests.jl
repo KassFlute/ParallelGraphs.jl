@@ -425,6 +425,47 @@ using GraphIO.GML: GMLFormat
                     end
                 end
             end
+
+            @testset "Big graphs" begin
+                adjacency_matrix = [
+                    0 1 1 1 0 1 0 0 1 0 1 1 0 1 0
+                    1 0 1 0 0 0 1 1 1 0 1 1 1 0 1
+                    1 1 0 0 0 1 1 1 0 1 1 0 0 1 1
+                    1 0 0 0 0 0 0 1 1 1 1 0 1 0 0
+                    0 0 0 0 0 1 0 1 0 1 0 0 1 1 0
+                    1 0 1 0 1 0 1 0 1 1 0 1 1 1 0
+                    0 1 1 0 0 1 0 1 1 0 1 0 0 0 0
+                    0 1 1 1 1 0 1 0 1 0 0 0 0 1 1
+                    1 1 0 1 0 1 1 1 0 0 1 0 1 1 0
+                    0 0 1 1 1 1 0 0 0 0 1 1 0 1 0
+                    1 1 1 1 0 0 1 0 1 1 0 0 0 0 1
+                    1 1 0 0 0 1 0 0 0 1 0 0 1 1 0
+                    0 1 0 1 1 1 0 0 1 0 0 1 0 0 0
+                    1 0 1 0 1 1 0 1 1 1 0 1 0 0 0
+                    0 1 1 0 0 0 0 1 0 0 1 0 0 0 0
+                ]
+                graph = SimpleGraph(adjacency_matrix)
+
+                # Color the graph with different orders
+                coloring1 = ParallelGraphs.shuffle_and_color(graph)
+                coloring2 = ParallelGraphs.shuffle_and_color(graph)
+
+                # Ensure all vertices are colored
+                @test all(coloring1.colors .!= 0)
+                @test all(coloring2.colors .!= 0)
+
+                # Ensure the number of colors used is minimal (<= max degree + 1)
+                @test coloring1.num_colors <= maximum(degree(graph)) + 1
+                @test coloring2.num_colors == maximum(degree(graph)) + 1
+
+                # Ensure adjacent vertices have different colors
+                for v in 1:nv(graph)
+                    for neighbor in neighbors(graph, v)
+                        @test coloring1.colors[v] != coloring1.colors[neighbor]
+                        @test coloring2.colors[v] != coloring2.colors[neighbor]
+                    end
+                end
+            end
         end
 
         @testset "utils" begin
