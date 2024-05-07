@@ -456,7 +456,7 @@ using GraphIO.GML: GMLFormat
 
                 # Ensure the number of colors used is minimal (<= max degree + 1)
                 @test coloring1.num_colors <= maximum(degree(graph)) + 1
-                @test coloring2.num_colors == maximum(degree(graph)) + 1
+                @test coloring2.num_colors <= maximum(degree(graph)) + 1
 
                 # Ensure adjacent vertices have different colors
                 for v in 1:nv(graph)
