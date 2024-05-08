@@ -454,9 +454,11 @@ using GraphIO.GML: GMLFormat
                 @test all(coloring1.colors .!= 0)
                 @test all(coloring2.colors .!= 0)
 
-                # Ensure the number of colors used is minimal (<= max degree + 1)
+                # Ensure the number of colors used is bound between [<= max degree + 1] and [>= 1]
                 @test coloring1.num_colors <= maximum(degree(graph)) + 1
                 @test coloring2.num_colors <= maximum(degree(graph)) + 1
+                @test coloring1.num_colors >= 1
+                @test coloring2.num_colors >= 1
 
                 # Ensure adjacent vertices have different colors
                 for v in 1:nv(graph)
