@@ -33,6 +33,7 @@ using SuiteSparseGraphBLAS:
     second,
     min,
     *,
+    +,
     any,
     secondi,
     mask!,
@@ -45,7 +46,8 @@ using SuiteSparseGraphBLAS:
     assign!,
     extract!,
     Monoid,
-    Descriptor
+    Descriptor, 
+    gbrand
 
 using SuiteSparseGraphBLAS.BinaryOps: ∨
 
@@ -63,6 +65,7 @@ export bfs_seq,
     bfs_par!,
     bfs_par_local!,
     bfs_BLAS!,
-    shuffle_and_color_n_times
+    shuffle_and_color_n_times, 
+    BLAS_coloring
 
 end
