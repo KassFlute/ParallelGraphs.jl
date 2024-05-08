@@ -321,6 +321,165 @@ using GraphIO.GML: GMLFormat
             end
         end
 
+        @testset "Greedy coloring sequential" begin
+            @testset "Basic undirected graph" begin
+                adjacency_matrix = [
+                    0 1 1 0
+                    1 0 0 1
+                    1 0 0 1
+                    0 1 1 0
+                ]
+                graph = SimpleGraph(adjacency_matrix)
+
+                # Test coloring with different orders
+                order1 = [1, 2, 3, 4]
+                order2 = [4, 3, 2, 1]
+
+                # Color the graph with different orders
+                coloring1 = ParallelGraphs.greedy_coloring(graph, order1)
+                coloring2 = ParallelGraphs.greedy_coloring(graph, order2)
+
+                # Ensure all vertices are colored
+                @test all(coloring1.colors .!= 0)
+                @test all(coloring2.colors .!= 0)
+
+                # Ensure the number of colors used is minimal
+                @test coloring1.num_colors == 2
+                @test coloring2.num_colors == 2
+
+                # Ensure adjacent vertices have different colors
+                for v in 1:nv(graph)
+                    for neighbor in neighbors(graph, v)
+                        @test coloring1.colors[v] != coloring1.colors[neighbor]
+                        @test coloring2.colors[v] != coloring2.colors[neighbor]
+                    end
+                end
+            end
+
+            @testset "Not-connected graph" begin
+                adjacency_matrix = [
+                    0 1 0 0 0 0
+                    1 0 1 0 0 0
+                    0 1 0 0 0 0
+                    0 0 0 0 1 0
+                    0 0 0 1 0 1
+                    0 0 0 0 1 0
+                ]
+                graph = SimpleGraph(adjacency_matrix)
+
+                # Test coloring with different orders
+                order1 = [1, 2, 3, 4, 5, 6]
+                order2 = [6, 5, 4, 3, 2, 1]
+
+                # Color the graph with different orders
+                coloring1 = ParallelGraphs.greedy_coloring(graph, order1)
+                coloring2 = ParallelGraphs.greedy_coloring(graph, order2)
+
+                # Ensure all vertices are colored
+                @test all(coloring1.colors .!= 0)
+                @test all(coloring2.colors .!= 0)
+
+                # Ensure the number of colors used is minimal
+                @test coloring1.num_colors == 2
+                @test coloring2.num_colors == 2
+
+                # Ensure adjacent vertices have different colors
+                for v in 1:nv(graph)
+                    for neighbor in neighbors(graph, v)
+                        @test coloring1.colors[v] != coloring1.colors[neighbor]
+                        @test coloring2.colors[v] != coloring2.colors[neighbor]
+                    end
+                end
+            end
+
+            @testset "Basic directed graph" begin
+                adjacency_matrix = [
+                    0 1 0 0
+                    0 0 1 0
+                    0 0 0 1
+                    0 1 0 0
+                ]
+                graph = SimpleDiGraph(adjacency_matrix)
+
+                # Test coloring with different orders
+                order1 = [1, 2, 3, 4]
+                order2 = [4, 3, 2, 1]
+
+                # Color the graph with different orders
+                coloring1 = ParallelGraphs.greedy_coloring(graph, order1)
+                coloring2 = ParallelGraphs.greedy_coloring(graph, order2)
+
+                # Ensure all vertices are colored
+                @test all(coloring1.colors .!= 0)
+                @test all(coloring2.colors .!= 0)
+
+                # Ensure the number of colors used is minimal
+                @test coloring1.num_colors == 3
+                @test coloring2.num_colors == 3
+
+                # Ensure adjacent vertices have different colors
+                for v in 1:nv(graph)
+                    for neighbor in outneighbors(graph, v)
+                        @test coloring1.colors[v] != coloring1.colors[neighbor]
+                        @test coloring2.colors[v] != coloring2.colors[neighbor]
+                    end
+                end
+            end
+
+            @testset "Big graphs" begin
+                adjacency_matrix = [
+                    0 1 1 1 0 1 0 0 1 0 1 1 0 1 0
+                    1 0 1 0 0 0 1 1 1 0 1 1 1 0 1
+                    1 1 0 0 0 1 1 1 0 1 1 0 0 1 1
+                    1 0 0 0 0 0 0 1 1 1 1 0 1 0 0
+                    0 0 0 0 0 1 0 1 0 1 0 0 1 1 0
+                    1 0 1 0 1 0 1 0 1 1 0 1 1 1 0
+                    0 1 1 0 0 1 0 1 1 0 1 0 0 0 0
+                    0 1 1 1 1 0 1 0 1 0 0 0 0 1 1
+                    1 1 0 1 0 1 1 1 0 0 1 0 1 1 0
+                    0 0 1 1 1 1 0 0 0 0 1 1 0 1 0
+                    1 1 1 1 0 0 1 0 1 1 0 0 0 0 1
+                    1 1 0 0 0 1 0 0 0 1 0 0 1 1 0
+                    0 1 0 1 1 1 0 0 1 0 0 1 0 0 0
+                    1 0 1 0 1 1 0 1 1 1 0 1 0 0 0
+                    0 1 1 0 0 0 0 1 0 0 1 0 0 0 0
+                ]
+                graph = SimpleGraph(adjacency_matrix)
+
+                # Color the graph with different orders
+                coloring1 = ParallelGraphs.shuffle_and_color(graph)
+                coloring2 = ParallelGraphs.shuffle_and_color_n_times(graph, 10)
+                coloring3 = ParallelGraphs.degree_order_and_color(graph)
+                coloring4 = ParallelGraphs.degree_order_and_color_n_times(graph, 10)
+
+                # Ensure all vertices are colored
+                @test all(coloring1.colors .!= 0)
+                @test all(coloring2.colors .!= 0)
+                @test all(coloring3.colors .!= 0)
+                @test all(coloring4.colors .!= 0)
+
+                # Ensure the number of colors used is bound between [<= max degree + 1] and [>= 1]
+                @test coloring1.num_colors <= maximum(degree(graph)) + 1
+                @test coloring2.num_colors <= maximum(degree(graph)) + 1
+                @test coloring3.num_colors <= maximum(degree(graph)) + 1
+                @test coloring4.num_colors <= maximum(degree(graph)) + 1
+                @test coloring1.num_colors >= 1
+                @test coloring2.num_colors >= 1
+                @test coloring3.num_colors >= 1
+                @test coloring4.num_colors >= 1
+
+                # Ensure adjacent vertices have different colors
+                for v in 1:nv(graph)
+                    for neighbor in neighbors(graph, v)
+                        @test coloring1.colors[v] != coloring1.colors[neighbor]
+                        @test coloring2.colors[v] != coloring2.colors[neighbor]
+                        @test coloring3.colors[v] != coloring3.colors[neighbor]
+                        @test coloring4.colors[v] != coloring4.colors[neighbor]
+                    end
+                end
+            end
+        end
+
         @testset "utils" begin
             # t_push!
             q = ParallelGraphs.ThreadQueue(Int, 5)

@@ -7,9 +7,11 @@ using Graphs:
     SimpleGraph,
     SimpleDiGraph,
     neighbors,
+    all_neighbors,
     add_edge!,
     has_vertex,
     nv,
+    degree,
     dorogovtsev_mendes,
     adjacency_matrix
 
@@ -52,8 +54,16 @@ include("utils.jl")
 include("traversals/BFS/bfs_seq.jl")
 include("traversals/BFS/bfs_par.jl")
 include("traversals/BFS/bfs_BLAS.jl")
+include("traversals/coloring/greedy_coloring_seq.jl")
 
 export bfs_seq,
-    bfs_par, bfs_par_local, bfs_BLAS, bfs_seq!, bfs_par!, bfs_par_local!, bfs_BLAS!
+    bfs_par,
+    bfs_par_local,
+    bfs_BLAS,
+    bfs_seq!,
+    bfs_par!,
+    bfs_par_local!,
+    bfs_BLAS!,
+    shuffle_and_color_n_times
 
 end
