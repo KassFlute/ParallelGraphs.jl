@@ -34,7 +34,6 @@ function greedy_coloring(g::AbstractGraph, order::Vector{Int})
                 available[colors[neighbor]] = false
             end
         end
-        print(available)
         color = findfirst(available)
         if color === nothing
             max_color += 1
