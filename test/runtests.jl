@@ -426,6 +426,17 @@ using GraphIO.GML: GMLFormat
                 end
             end
         end
+        @testset "BLAS coloring" begin
+            graph = barabasi_albert(100, 2)
+            coloring = ParallelGraphs.BLAS_coloring(graph)
+
+            @test all(coloring .!= 0)
+            for v in 1:nv(graph)
+                for neighbor in outneighbors(graph, v)
+                    @test coloring[v] != coloring[neighbor]
+                end
+            end
+        end
 
         @testset "utils" begin
             # t_push!
