@@ -28,17 +28,18 @@ function greedy_coloring(g::AbstractGraph, order::Vector{Int})
 
     # Loop through the vertices in the given order
     for v in order
-        available = Set(1:max_color)
+        available = fill(true, max_color)
         for neighbor in all_neighbors(g, v)
             if colors[neighbor] != 0
-                delete!(available, colors[neighbor])
+                available[colors[neighbor]] = false
             end
         end
-        if isempty(available)
+        color = findfirst(available)
+        if color === nothing
             max_color += 1
             colors[v] = max_color
         else
-            colors[v] = minimum(available)
+            colors[v] = color
         end
     end
 
@@ -70,6 +71,37 @@ function shuffle_and_color_n_times(g::AbstractGraph, n::Int)
     best_coloring = shuffle_and_color(g)
     for i in 2:n
         coloring = shuffle_and_color(g)
+        if coloring.num_colors < best_coloring.num_colors
+            best_coloring = coloring
+        end
+    end
+    return best_coloring
+end
+
+"""
+    Function to order the vertices of a graph by degree and perform a greedy coloring.
+
+    g: Graph to be colored.
+
+    Returns a `Coloring` struct with the coloring of the graph.
+"""
+function degree_order_and_color(g::AbstractGraph)
+    order = sortperm(degree(g); rev=true)
+    return greedy_coloring(g, order)
+end
+
+"""
+    Function to order the vertices of a graph by degree and perform a greedy coloring `n` times.
+
+    g: Graph to be colored.
+    n: Number of times the graph will be colored.
+
+    Returns a `Coloring` struct with the best coloring found.
+"""
+function degree_order_and_color_n_times(g::AbstractGraph, n::Int)
+    best_coloring = degree_order_and_color(g)
+    for i in 2:n
+        coloring = degree_order_and_color(g)
         if coloring.num_colors < best_coloring.num_colors
             best_coloring = coloring
         end

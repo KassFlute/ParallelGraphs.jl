@@ -11,6 +11,7 @@ using Graphs:
     add_edge!,
     has_vertex,
     nv,
+    degree,
     dorogovtsev_mendes,
     adjacency_matrix
 
