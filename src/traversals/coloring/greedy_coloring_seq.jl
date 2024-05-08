@@ -76,3 +76,34 @@ function shuffle_and_color_n_times(g::AbstractGraph, n::Int)
     end
     return best_coloring
 end
+
+"""
+    Function to order the vertices of a graph by degree and perform a greedy coloring.
+
+    g: Graph to be colored.
+
+    Returns a `Coloring` struct with the coloring of the graph.
+"""
+function degree_order_and_color(g::AbstractGraph)
+    order = sortperm(degree(g); rev=true)
+    return greedy_coloring(g, order)
+end
+
+"""
+    Function to order the vertices of a graph by degree and perform a greedy coloring `n` times.
+
+    g: Graph to be colored.
+    n: Number of times the graph will be colored.
+
+    Returns a `Coloring` struct with the best coloring found.
+"""
+function degree_order_and_color_n_times(g::AbstractGraph, n::Int)
+    best_coloring = degree_order_and_color(g)
+    for i in 2:n
+        coloring = degree_order_and_color(g)
+        if coloring.num_colors < best_coloring.num_colors
+            best_coloring = coloring
+        end
+    end
+    return best_coloring
+end
