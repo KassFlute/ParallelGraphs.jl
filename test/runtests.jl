@@ -448,7 +448,7 @@ using GraphIO.GML: GMLFormat
 
                 # Color the graph with different orders
                 coloring1 = ParallelGraphs.shuffle_and_color(graph)
-                coloring2 = ParallelGraphs.shuffle_and_color(graph)
+                coloring2 = ParallelGraphs.shuffle_and_color_n_times(graph, 10)
 
                 # Ensure all vertices are colored
                 @test all(coloring1.colors .!= 0)
