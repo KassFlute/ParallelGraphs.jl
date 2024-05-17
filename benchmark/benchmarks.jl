@@ -53,8 +53,8 @@ end
 
 # Struct to store the graphs to benchmark
 @enum GraphType begin
-    GENERATED_GRAPH
-    IMPORTED_GRAPH
+    GEN
+    IMPORT
 end
 
 struct BenchGraphs
@@ -73,33 +73,37 @@ for i in eachindex(SIZES)
     v = SIZES[i]
     push!(
         bench_graphs,
-        BenchGraphs(dorogovtsev_mendes(v), v, "dorogovtsev_mendes", GENERATED_GRAPH, 1),
+        BenchGraphs(dorogovtsev_mendes(v), v, "dorogovtsev_mendes", GEN, 1),
     )
     push!(
         bench_graphs,
-        BenchGraphs(barabasi_albert(v, 2), v, "barabasi_albert - 2", GENERATED_GRAPH, 1),
+        BenchGraphs(barabasi_albert(v, 2), v, "barabasi_albert - 2", GEN, 1),
     )
     push!(
         bench_graphs,
-        BenchGraphs(barabasi_albert(v, 8), v, "barabasi_albert - 8", GENERATED_GRAPH, 1),
+        BenchGraphs(barabasi_albert(v, 8), v, "barabasi_albert - 8", GEN, 1),
     )
     push!(
         bench_graphs,
         BenchGraphs(
-            binary_tree(round(Int, log2(v)) + 1), v, "binary_tree", GENERATED_GRAPH, 1
+            binary_tree(round(Int, log2(v)) + 1),
+            v,
+            "binary_tree",
+            GEN,
+            1,
         ),
     )
     #push!(generated_graphs, BenchGraphs(double_binary_tree(round(Int, log2(v))), "double_binary_tree", GENERATED, 1))
     push!(
         bench_graphs,
-        BenchGraphs(star_graph(v), v, "star_graph - center start", GENERATED_GRAPH, 1),
+        BenchGraphs(star_graph(v), v, "star_graph - center start", GEN, 1),
     )
     push!(
         bench_graphs,
-        BenchGraphs(star_graph(v), v, "star_graph - border start", GENERATED_GRAPH, 2),
+        BenchGraphs(star_graph(v), v, "star_graph - border start", GEN, 2),
     )
     N = round(Int, sqrt(sqrt(v)))
-    push!(bench_graphs, BenchGraphs(grid([N, N, N, N]), v, "grid 4 dims", GENERATED_GRAPH, 1))
+    push!(bench_graphs, BenchGraphs(grid([N, N, N, N]), v, "grid 4 dims", GEN, 1))
     #push!(generated_graphs, BenchGraphs(path_digraph(v), "path_digraph", GENERATED, round(Int, v / 2)))
 end
 println("OK")
@@ -113,7 +117,7 @@ push!(
         g,
         nv(g),
         "large_twitch_edges.csv",
-        IMPORTED_GRAPH,
+        IMPORT,
         1,
     ),
 )
