@@ -103,17 +103,17 @@ println("OK")
 
 # Add imported graphs
 print("Import graphs...")
-# g = loadgraph("benchmark/data/large_twitch_edges.csv", "twitch user network", EdgeListFormat())
-# push!(
-#     bench_graphs,
-#     BenchGraphs(
-#         g,
-#         nv(g),
-#         "medium_twitch_edges.csv",
-#         IMPORTED_GRAPH,
-#         1,
-#     ),
-# )
+g = loadgraph("benchmark/data/large_twitch_edges.csv", "twitch user network", EdgeListFormat())
+push!(
+    bench_graphs,
+    BenchGraphs(
+        g,
+        nv(g),
+        "medium_twitch_edges.csv",
+        IMPORTED_GRAPH,
+        1,
+    ),
+)
 println("OK")
 
 #push!(
