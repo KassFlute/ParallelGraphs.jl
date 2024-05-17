@@ -30,12 +30,15 @@ using Plots
 ### Benchmark setup ###
 #######################
 
+SIZES_TO_GENERATE = [10, 100, 1000, 10000] # sizes in number of vertices
+
 # BenchmarkTools parameters
 BenchmarkTools.DEFAULT_PARAMETERS.samples = 10
 BenchmarkTools.DEFAULT_PARAMETERS.seconds = Inf
 SUITE = BenchmarkGroup()
 SUITE["BFS"] = BenchmarkGroup()
 gbset(:nthreads, Threads.nthreads())
+
 
 # Check if Julia was started with more than one thread
 if Threads.nthreads() == 1
@@ -63,7 +66,7 @@ struct BenchGraphs
 end
 
 # Generate bench graphs
-SIZES = [30] # sizes in number of vertices
+SIZES = SIZES_TO_GENERATE # sizes in number of vertices
 bench_graphs = Vector{BenchGraphs}()
 print("Generate graphs...")
 for i in eachindex(SIZES)
