@@ -209,6 +209,7 @@ function parse_results(
     end
     return data
 end
+
 function plot_results(data::DataFrame)
     grouped_by_graph = groupby(data, :graph)
 
@@ -233,3 +234,15 @@ function plot_results(data::DataFrame)
         println("Saved plot to $filename")
     end
 end
+
+print("Run benchmarks...")
+results = run(SUITE)
+println("OK")
+
+print("Parse results...")
+data = parse_results(results)
+println("OK")
+
+print("Plot results...")
+plot_results(data)
+println("FINISH")
