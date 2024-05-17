@@ -222,6 +222,7 @@ function plot_results(data::DataFrame)
             xlabel="Size",
             ylabel="Time (ns)",
             xscale=:log10,
+            yscale=:log10,
         )
 
         algo_grouped = groupby(graph_group, :algo_implem)
