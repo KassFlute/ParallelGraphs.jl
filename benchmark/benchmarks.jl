@@ -22,6 +22,9 @@ using GraphIO.EdgeList
 using GraphIO.EdgeList: IntEdgeListFormat, loadgraph
 using ParserCombinator
 using GraphIO.GML: GMLFormat
+using DataFrames
+using CSV
+using Plots
 
 #######################
 ### Benchmark setup ###
@@ -41,66 +44,77 @@ else
     @warn "Julia started with: $(Threads.nthreads()) threads."
 end
 
-# Benchmark graphs parameters
-SIZE = [30_000, 300_000, 3_000_000] # sizes in number of vertices
-CLASSES = [
-    "30k",
-    "300k",
-    "3M",
-    "twitch_user",
-    #"live journal",
-]
+##################
+### Add Graphs ###
+##################
 
-generated_graphs = [Vector{AbstractGraph{Int}}() for _ in 1:length(SIZE)]
-g_first_vertex = [Vector{Int}() for _ in 1:length(SIZE)]
-
-imported_graphs = Vector{AbstractGraph{Int}}()
-i_first_vertex = Vector{Int}()
-
-names = Dict{String,Vector{String}}("Generated" => [], "Imported" => [])
-
-function addgraphtolist(i::Int, g::AbstractGraph{Int}, n::String, v::Int)
-    push!(generated_graphs[i], g)
-    push!(names["Generated"], n)
-    return push!(g_first_vertex[i], v)
+# Struct to store the graphs to benchmark
+@enum GraphType begin
+    GENERATED_GRAPH
+    IMPORTED_GRAPH
 end
 
-for i in eachindex(SIZE)
-    v = SIZE[i]
+struct BenchGraphs
+    graph::AbstractGraph
+    size::Int
+    name::String
+    type::GraphType
+    start_vertex::Int
+end
 
-    #addgraphtolist(i, dorogovtsev_mendes(v), "dorogovtsev_mendes", 1)
-    addgraphtolist(i, barabasi_albert(v, 2), "barabasi_albert - 2", 1)
-    addgraphtolist(i, barabasi_albert(v, 8), "barabasi_albert - 8", 1)
-    addgraphtolist(i, binary_tree(round(Int, log2(v)) + 1), "binary_tree", 1)
-    #addgraphtolist(i, double_binary_tree(round(Int, log2(v))), "double_binary_tree", 1)
-    addgraphtolist(i, star_graph(v), "star_graph - center start", 1)
-    addgraphtolist(i, star_graph(v), "star_graph - border start", 2)
+# Generate bench graphs
+SIZES = [30] # sizes in number of vertices
+bench_graphs = Vector{BenchGraphs}()
+print("Generate graphs...")
+for i in eachindex(SIZES)
+    v = SIZES[i]
+    push!(
+        bench_graphs,
+        BenchGraphs(dorogovtsev_mendes(v), v, "dorogovtsev_mendes", GENERATED_GRAPH, 1),
+    )
+    push!(
+        bench_graphs,
+        BenchGraphs(barabasi_albert(v, 2), v, "barabasi_albert - 2", GENERATED_GRAPH, 1),
+    )
+    push!(
+        bench_graphs,
+        BenchGraphs(barabasi_albert(v, 8), v, "barabasi_albert - 8", GENERATED_GRAPH, 1),
+    )
+    push!(
+        bench_graphs,
+        BenchGraphs(
+            binary_tree(round(Int, log2(v)) + 1), v, "binary_tree", GENERATED_GRAPH, 1
+        ),
+    )
+    #push!(generated_graphs, BenchGraphs(double_binary_tree(round(Int, log2(v))), "double_binary_tree", GENERATED, 1))
+    push!(
+        bench_graphs,
+        BenchGraphs(star_graph(v), v, "star_graph - center start", GENERATED_GRAPH, 1),
+    )
+    push!(
+        bench_graphs,
+        BenchGraphs(star_graph(v), v, "star_graph - border start", GENERATED_GRAPH, 2),
+    )
     N = round(Int, sqrt(sqrt(v)))
-    addgraphtolist(i, grid([N, N, N, N]), "grid 4 dims", 1)
-    #addgraphtolist(i, path_digraph(v), "path_digraph", round(Int, v / 2))
+    push!(bench_graphs, BenchGraphs(grid([N, N, N, N]), v, "grid 4 dims", GENERATED_GRAPH, 1))
+    #push!(generated_graphs, BenchGraphs(path_digraph(v), "path_digraph", GENERATED, round(Int, v / 2)))
 end
+println("OK")
 
-# Load graphs from files
-
-#push!(imported_graphs, loadgraph("benchmark/data/routers.csv", "routers", EdgeListFormat()))
-#push!(names["Imported"], "routers.csv")
-#push!(i_first_vertex, 1)
-#
-#push!(
-#    imported_graphs,
-#    loadgraph("benchmark/data/internet_routers_bigger.gml", "graph", GMLFormat()),
-#)
-#push!(names["Imported"], "internet_routers_bigger.gml")
-#push!(i_first_vertex, 1)
-
-push!(
-    imported_graphs,
-    loadgraph(
-        "benchmark/data/large_twitch_edges.csv", "twitch user network", EdgeListFormat()
-    ),
-)
-push!(names["Imported"], "large_twitch_edges.csv")
-push!(i_first_vertex, 1)
+# Add imported graphs
+print("Import graphs...")
+# g = loadgraph("benchmark/data/large_twitch_edges.csv", "twitch user network", EdgeListFormat())
+# push!(
+#     bench_graphs,
+#     BenchGraphs(
+#         g,
+#         nv(g),
+#         "medium_twitch_edges.csv",
+#         IMPORTED_GRAPH,
+#         1,
+#     ),
+# )
+println("OK")
 
 #push!(
 #    imported_graphs,
@@ -117,11 +131,11 @@ push!(i_first_vertex, 1)
 
 Create a benchmark for BFS on a graph `g` with a starting vertex `v` and store it in the global `SUITE` variable.
 """
-function bench_BFS(g::AbstractGraph, v::Int, name::String, class::String)
+function bench_BFS(bg::BenchGraphs)
     # Our sequential
-    SUITE["BFS"][class][name]["seq"] = @benchmarkable ParallelGraphs.bfs_seq!(
-        $g, $v, parents_prepared
-    ) evals = 1 setup = (parents_prepared = fill(0, nv($g)))
+    SUITE["BFS"][string(bg.type) * ": " * bg.name][bg.size]["seq"] = @benchmarkable ParallelGraphs.bfs_seq!(
+        $bg.graph, $bg.start_vertex, parents_prepared
+    ) evals = 1 setup = (parents_prepared = fill(0, nv($bg.graph)))
 
     ## Our parallel similar to Graphs.jl
     #SUITE["BFS"][class][name]["par"] = @benchmarkable ParallelGraphs.bfs_par!(
@@ -129,68 +143,40 @@ function bench_BFS(g::AbstractGraph, v::Int, name::String, class::String)
     #) evals = 1 setup = (parents_atomic_prepared = [Atomic{Int}(0) for _ in 1:nv($g)])
 
     # Our parallel with local queues
-    SUITE["BFS"][class][name]["par_local"] = @benchmarkable ParallelGraphs.bfs_par_local!(
-        $g, $v, parents_atomic_prepared, queues_prepared, to_visit_prepared
-    ) evals = 1 setup = (parents_atomic_prepared = [Atomic{Int}(0) for _ in 1:nv($g)];
-    queues_prepared = Vector{Queue{Int}}();
-    foreach(1:(10 * Threads.nthreads())) do i
-        push!(queues_prepared, Queue{Int}())
-    end;
-    to_visit_prepared = zeros(Int, nv($g)))
+    SUITE["BFS"][string(bg.type) * ": " * bg.name][bg.size]["par_local"] = @benchmarkable ParallelGraphs.bfs_par_local!(
+        $bg.graph,
+        $bg.start_vertex,
+        parents_atomic_prepared,
+        queues_prepared,
+        to_visit_prepared,
+    ) evals = 1 setup = (
+        parents_atomic_prepared = [Atomic{Int}(0) for _ in 1:nv($bg.graph)];
+        queues_prepared = Vector{Queue{Int}}();
+        foreach(1:(10 * Threads.nthreads())) do i
+            push!(queues_prepared, Queue{Int}())
+        end;
+        to_visit_prepared = zeros(Int, nv($bg.graph))
+    )
 
     ## Our GraphBLAS based implementation
-
-    A_T = GBMatrix{Bool}((adjacency_matrix(graph, Bool; dir=:in)))
-    SUITE["BFS"][class][name]["BLAS"] = @benchmarkable ParallelGraphs.bfs_BLAS!(
-        $A_T, $v, p, f
-    ) evals = 1 setup = (p = GBVector{Int}(nv($g); fill=zero(Int));
-    f = GBVector{Bool}(nv($g); fill=false))
+    A_T = GBMatrix{Bool}((adjacency_matrix(bg.graph, Bool; dir=:in)))
+    SUITE["BFS"][string(bg.type) * ": " * bg.name][bg.size]["BLAS"] = @benchmarkable ParallelGraphs.bfs_BLAS!(
+        $A_T, $bg.start_vertex, p, f
+    ) evals = 1 setup = (p = GBVector{Int}(nv($bg.graph); fill=zero(Int));
+    f = GBVector{Bool}(nv($bg.graph); fill=false))
 
     ## Graphs.jl implementation
-    return SUITE["BFS"][class][name]["graphs.jl_par"] = @benchmarkable GP.bfs_tree!(
-        next_prepared, $g, $v, parents_prepared
-    ) evals = 1 setup = (next_prepared = GP.ThreadQueue(Int, nv($g));
-    parents_prepared = [Atomic{Int}(0) for i in 1:nv($g)])
+    SUITE["BFS"][string(bg.type) * ": " * bg.name][bg.size]["graphs.jl_par"] = @benchmarkable GP.bfs_tree!(
+        next_prepared, $bg.graph, $bg.start_vertex, parents_prepared
+    ) evals = 1 setup = (next_prepared = GP.ThreadQueue(Int, nv($bg.graph));
+    parents_prepared = [Atomic{Int}(0) for i in 1:nv($bg.graph)])
+
+    return SUITE
 end
 
-println("Benchmarking BFS on imported graphs : ", length(imported_graphs))
-for i in eachindex(imported_graphs)
-    graph = imported_graphs[i]
-    name = names["Imported"][i]
-    vertex = i_first_vertex[i]
-    class = CLASSES[length(SIZE) + i]
-    print(". ")
-    bench_BFS(graph, vertex, name, class)
-end
-println(" ")
-
-println(
-    "Benchmarking BFS on generated graphs and sizes : ",
-    length(generated_graphs[1]),
-    " x ",
-    length(generated_graphs),
-)
-for s in eachindex(SIZE)
-    for g in eachindex(generated_graphs[s])
-        graph = generated_graphs[s][g]
-        name = names["Generated"][g]
-        vertex = g_first_vertex[s][g]
-        class = CLASSES[s]
-        print(". ")
-        bench_BFS(graph, vertex, name, class)
-    end
-    println(" ")
+println("Added BFS benchmarks: ", length(bench_graphs))
+for i in eachindex(bench_graphs)
+    bench_BFS(bench_graphs[i])
 end
 
-# If a cache of tuned parameters already exists, use it, otherwise, tune and cache
-# the benchmark parameters. Reusing cached parameters is faster and more reliable
-# than re-tuning `suite` every time the file is included.
 
-# paramspath = joinpath(dirname(@__FILE__), "params.json")
-
-# if isfile(paramspath)
-#     loadparams!(SUITE, BenchmarkTools.load(paramspath)[1], :evals)
-# else
-#     tune!(SUITE)
-#     BenchmarkTools.save(paramspath, params(SUITE))
-# end
