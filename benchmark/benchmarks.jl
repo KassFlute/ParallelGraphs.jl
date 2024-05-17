@@ -180,3 +180,32 @@ for i in eachindex(bench_graphs)
 end
 
 
+##############################
+### benchmarks run methods ###
+##############################
+
+function parse_results(
+    results; path="benchmark/out/benchmarks.csv"
+)
+    data = DataFrame(; tested_algo=[], graph=[], size=[], algo_implem=[], minimum_time=[])
+    for tested_algo in identity.(keys(results))
+        for graph in identity.(keys(results[tested_algo]))
+            for size in identity.(keys(results[tested_algo][graph]))
+                for algo_implem in identity.(keys(results[tested_algo][graph][size]))
+                    perf = results[tested_algo][graph][size][algo_implem]
+                    #println(tested_algo, " ", graph, " ", size, " ", algo_implem, " ", perf)
+                    push!(data, (tested_algo, graph, size, algo_implem, minimum(perf.times)))
+                end
+            end
+        end
+    end
+
+    if !isnothing(path)
+        dir = dirname(path)
+        mkpath(dir)
+        open(path, "w") do file
+            CSV.write(file, data)
+        end
+    end
+    return data
+end
