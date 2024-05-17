@@ -215,7 +215,6 @@ end
 
 function plot_results(data::DataFrame)
     grouped_by_graph = groupby(data, :graph)
-
     for (i, graph_group) in enumerate(grouped_by_graph)
         p = plot(;
             title=string(graph_group.graph[1]),
@@ -224,7 +223,6 @@ function plot_results(data::DataFrame)
             xscale=:log10,
             yscale=:log10,
         )
-
         algo_grouped = groupby(graph_group, :algo_implem)
 
         for algo_group in algo_grouped
@@ -238,7 +236,6 @@ function plot_results(data::DataFrame)
                 marker=:auto,
             )
         end
-
         filename = "benchmark/out/plot_$(graph_group.graph[1])_$(i).png"
         savefig(p, filename)
         println("Saved plot to $filename")
