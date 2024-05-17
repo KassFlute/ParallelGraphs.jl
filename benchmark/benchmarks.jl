@@ -209,3 +209,27 @@ function parse_results(
     end
     return data
 end
+function plot_results(data::DataFrame)
+    grouped_by_graph = groupby(data, :graph)
+
+    for (i, graph_group) in enumerate(grouped_by_graph)
+        grouped = groupby(graph_group, [:tested_algo, :size, :algo_implem])
+        p = plot(;
+            title=string(graph_group.graph[1]), xlabel="Size", ylabel="Time (ns)"
+        )
+
+        for group in grouped
+            plot!(
+                p,
+                group.size,
+                group.minimum_time;
+                label=string(group.algo_implem[1]),
+                ylims=(minimum(data.minimum_time), maximum(data.minimum_time)),
+            )
+        end
+
+        filename = "benchmark/out/plot_$(graph_group.graph[1])_$(i).png"
+        savefig(p, filename)
+        println("Saved plot to $filename")
+    end
+end
