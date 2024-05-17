@@ -181,10 +181,11 @@ function bench_BFS(bg::BenchGraphs)
     return SUITE
 end
 
-println("Added BFS benchmarks: ", length(bench_graphs))
+print("Add BFS benchmarks...")
 for i in eachindex(bench_graphs)
     bench_BFS(bench_graphs[i])
 end
+println("OK (", length(bench_graphs, ), " added)")
 
 
 ##############################
