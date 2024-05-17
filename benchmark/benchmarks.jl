@@ -112,7 +112,7 @@ push!(
     BenchGraphs(
         g,
         nv(g),
-        "medium_twitch_edges.csv",
+        "large_twitch_edges.csv",
         IMPORTED_GRAPH,
         1,
     ),
