@@ -217,18 +217,24 @@ function plot_results(data::DataFrame)
     grouped_by_graph = groupby(data, :graph)
 
     for (i, graph_group) in enumerate(grouped_by_graph)
-        grouped = groupby(graph_group, [:tested_algo, :size, :algo_implem])
         p = plot(;
-            title=string(graph_group.graph[1]), xlabel="Size", ylabel="Time (ns)"
+            title=string(graph_group.graph[1]),
+            xlabel="Size",
+            ylabel="Time (ns)",
+            xscale=:log10,
         )
 
-        for group in grouped
+        algo_grouped = groupby(graph_group, :algo_implem)
+
+        for algo_group in algo_grouped
+            sorted_group = sort(algo_group, :size)
             plot!(
                 p,
-                group.size,
-                group.minimum_time;
-                label=string(group.algo_implem[1]),
-                ylims=(minimum(data.minimum_time), maximum(data.minimum_time)),
+                sorted_group.size,
+                sorted_group.minimum_time;
+                label=string(sorted_group.algo_implem[1]),
+                seriestype=:line,
+                marker=:auto,
             )
         end
 
