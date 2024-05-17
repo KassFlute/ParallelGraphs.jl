@@ -39,7 +39,6 @@ SUITE = BenchmarkGroup()
 SUITE["BFS"] = BenchmarkGroup()
 gbset(:nthreads, Threads.nthreads())
 
-
 # Check if Julia was started with more than one thread
 if Threads.nthreads() == 1
     @warn "!!! Julia started with: $(Threads.nthreads()) threads, consider starting Julia with more threads to benchmark parallel code: `julia -t auto`."
@@ -71,37 +70,20 @@ bench_graphs = Vector{BenchGraphs}()
 print("Generate graphs...")
 for i in eachindex(SIZES)
     v = SIZES[i]
+    push!(bench_graphs, BenchGraphs(dorogovtsev_mendes(v), v, "dorogovtsev_mendes", GEN, 1))
     push!(
-        bench_graphs,
-        BenchGraphs(dorogovtsev_mendes(v), v, "dorogovtsev_mendes", GEN, 1),
+        bench_graphs, BenchGraphs(barabasi_albert(v, 2), v, "barabasi_albert - 2", GEN, 1)
+    )
+    push!(
+        bench_graphs, BenchGraphs(barabasi_albert(v, 8), v, "barabasi_albert - 8", GEN, 1)
     )
     push!(
         bench_graphs,
-        BenchGraphs(barabasi_albert(v, 2), v, "barabasi_albert - 2", GEN, 1),
-    )
-    push!(
-        bench_graphs,
-        BenchGraphs(barabasi_albert(v, 8), v, "barabasi_albert - 8", GEN, 1),
-    )
-    push!(
-        bench_graphs,
-        BenchGraphs(
-            binary_tree(round(Int, log2(v)) + 1),
-            v,
-            "binary_tree",
-            GEN,
-            1,
-        ),
+        BenchGraphs(binary_tree(round(Int, log2(v)) + 1), v, "binary_tree", GEN, 1),
     )
     #push!(generated_graphs, BenchGraphs(double_binary_tree(round(Int, log2(v))), "double_binary_tree", GENERATED, 1))
-    push!(
-        bench_graphs,
-        BenchGraphs(star_graph(v), v, "star_graph - center start", GEN, 1),
-    )
-    push!(
-        bench_graphs,
-        BenchGraphs(star_graph(v), v, "star_graph - border start", GEN, 2),
-    )
+    push!(bench_graphs, BenchGraphs(star_graph(v), v, "star_graph - center start", GEN, 1))
+    push!(bench_graphs, BenchGraphs(star_graph(v), v, "star_graph - border start", GEN, 2))
     N = round(Int, sqrt(sqrt(v)))
     push!(bench_graphs, BenchGraphs(grid([N, N, N, N]), v, "grid 4 dims", GEN, 1))
     #push!(generated_graphs, BenchGraphs(path_digraph(v), "path_digraph", GENERATED, round(Int, v / 2)))
@@ -110,17 +92,10 @@ println("OK")
 
 # Add imported graphs
 print("Import graphs...")
-g = loadgraph("benchmark/data/large_twitch_edges.csv", "twitch user network", EdgeListFormat())
-push!(
-    bench_graphs,
-    BenchGraphs(
-        g,
-        nv(g),
-        "large_twitch_edges.csv",
-        IMPORT,
-        1,
-    ),
+g = loadgraph(
+    "benchmark/data/large_twitch_edges.csv", "twitch user network", EdgeListFormat()
 )
+push!(bench_graphs, BenchGraphs(g, nv(g), "large_twitch_edges.csv", IMPORT, 1))
 println("OK")
 
 #push!(
@@ -185,16 +160,13 @@ print("Add BFS benchmarks...")
 for i in eachindex(bench_graphs)
     bench_BFS(bench_graphs[i])
 end
-println("OK (", length(bench_graphs, ), " added)")
-
+println("OK (", length(bench_graphs), " added)")
 
 ##############################
 ### benchmarks run methods ###
 ##############################
 
-function parse_results(
-    results; path="benchmark/out/benchmarks.csv"
-)
+function parse_results(results; path="benchmark/out/benchmarks.csv")
     data = DataFrame(; tested_algo=[], graph=[], size=[], algo_implem=[], minimum_time=[])
     for tested_algo in identity.(keys(results))
         for graph in identity.(keys(results[tested_algo]))
@@ -202,7 +174,9 @@ function parse_results(
                 for algo_implem in identity.(keys(results[tested_algo][graph][size]))
                     perf = results[tested_algo][graph][size][algo_implem]
                     #println(tested_algo, " ", graph, " ", size, " ", algo_implem, " ", perf)
-                    push!(data, (tested_algo, graph, size, algo_implem, minimum(perf.times)))
+                    push!(
+                        data, (tested_algo, graph, size, algo_implem, minimum(perf.times))
+                    )
                 end
             end
         end
