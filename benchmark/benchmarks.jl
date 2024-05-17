@@ -30,7 +30,7 @@ using Plots
 ### Benchmark setup ###
 #######################
 
-SIZES_TO_GENERATE = [10, 100, 1000, 10000] # sizes in number of vertices
+SIZES_TO_GENERATE = [10, 100, 1000, 10000, 100000] # sizes in number of vertices
 
 # BenchmarkTools parameters
 BenchmarkTools.DEFAULT_PARAMETERS.samples = 10
