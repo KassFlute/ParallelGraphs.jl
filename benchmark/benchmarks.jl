@@ -250,6 +250,6 @@ print("Parse results...")
 data = parse_results(results)
 println("OK")
 
-print("Plot results...")
+println("Plot results...")
 plot_results(data)
 println("FINISH")
