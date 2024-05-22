@@ -68,7 +68,9 @@ export bfs_seq,
     bfs_par_local!,
     bfs_BLAS!,
     shuffle_and_color_n_times,
+    degree_order_and_color_n_times,
     BLAS_coloring,
-    BLAS_coloring_maxIS
+    BLAS_coloring_maxIS,
+    Coloring
 
 end

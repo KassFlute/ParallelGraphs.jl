@@ -1,18 +1,6 @@
 using Random
 
 """
-    Struct to store the coloring of a graph.
-
-    num_colors: Number of colors used in the coloring.
-    colors: Vector of length `n` where `n` is the number of vertices in the graph.
-            The `i`-th element of the vector is the color assigned to the `i`-th vertex.
-"""
-struct Coloring{T<:Integer}
-    num_colors::T
-    colors::Vector{T}
-end
-
-"""
     Function to perform a greedy coloring of a graph.
 
     g: Graph to be colored.
