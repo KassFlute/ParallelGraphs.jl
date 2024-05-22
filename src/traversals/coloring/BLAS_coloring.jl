@@ -1,8 +1,30 @@
+# Descriptors
+const normal_mask_desc = Descriptor(;
+    nthreads=Threads.nthreads(), replace_output=true, structural_mask=true
+)
+const complement_mask_desc = Descriptor(;
+    nthreads=Threads.nthreads(),
+    replace_output=true,
+    structural_mask=true,
+    complement_mask=true,
+)
+const complement_acc_desc = Descriptor(;
+    nthreads=Threads.nthreads(), structural_mask=true, complement_mask=true
+)
+const complement_mask_noStruct_desc = Descriptor(;
+    nthreads=Threads.nthreads(),
+    replace_output=true,
+    structural_mask=false,
+    complement_mask=true,
+)
+const value_mask_desc = Descriptor(; nthreads=Threads.nthreads())
+
 function BLAS_coloring(graph::AbstractGraph)
     if nv(graph) == 0
         return []
     end
-    A_T = GBMatrix{Int}((adjacency_matrix(graph; dir=:in)))
+    A_T = GBMatrix{Bool}((adjacency_matrix(graph, Bool; dir=:in)))
+    A_T_int = GBMatrix{Int}(Int.(A_T))
     C = GBVector{Int}(nv(graph); fill=0)
     max_W_in_neighbors = GBVector{Float64}(nv(graph); fill=Float64(0.0))
     frontier = GBVector{Bool}(nv(graph); fill=false)
@@ -20,7 +42,7 @@ function BLAS_coloring(graph::AbstractGraph)
     value_mask_desc = Descriptor(; nthreads=Threads.nthreads())
 
     # Assign weights to vertices based on their degree
-    W_int = reduce(+, A_T; dims=2)
+    W_int = reduce(+, A_T_int; dims=2)
 
     # Break ties with random weights
     randomized_weights = gbrand(Float64, nv(graph), 1, 10.0)
