@@ -53,3 +53,15 @@ function split_chunks!(
     res[nb_chunks] = view(v, ((nb_chunks - 1) * chunk_size + 1):size)
     return nothing
 end
+
+"""
+    Struct to store the coloring of a graph.
+
+    num_colors: Number of colors used in the coloring.
+    colors: Vector of length `n` where `n` is the number of vertices in the graph.
+            The `i`-th element of the vector is the color assigned to the `i`-th vertex.
+"""
+struct Coloring{T<:Integer}
+    num_colors::T
+    colors::AbstractVector{T}
+end

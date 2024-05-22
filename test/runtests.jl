@@ -430,12 +430,28 @@ using GraphIO.GML: GMLFormat
             graph = barabasi_albert(100, 2)
             coloring = ParallelGraphs.BLAS_coloring(graph)
 
-            @test all(coloring .!= 0)
+            @test all(coloring.colors .!= 0)
             for v in 1:nv(graph)
                 for neighbor in outneighbors(graph, v)
-                    @test coloring[v] != coloring[neighbor]
+                    @test coloring.colors[v] != coloring.colors[neighbor]
                 end
             end
+            max_color = maximum(coloring.colors)
+            @test max_color == coloring.num_colors
+        end
+
+        @testset "BLAS MAX IS coloring" begin
+            graph = barabasi_albert(100, 2)
+            coloring = ParallelGraphs.BLAS_coloring_maxIS(graph)
+
+            @test all(coloring.colors .!= 0)
+            for v in 1:nv(graph)
+                for neighbor in outneighbors(graph, v)
+                    @test coloring.colors[v] != coloring.colors[neighbor]
+                end
+            end
+            max_color = maximum(coloring.colors)
+            @test max_color == coloring.num_colors
         end
 
         @testset "Greedy coloring sequential" begin
