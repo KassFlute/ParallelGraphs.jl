@@ -13,10 +13,11 @@ function greedy_coloring(g::AbstractGraph, order::Vector{Int})
     n = nv(g)
     colors = fill(0, n)
     max_color = 0
+    nvg = nv(g)
 
     # Loop through the vertices in the given order
     for v in order
-        available = fill(true, max_color)
+        available = fill(true, nvg)
         for neighbor in all_neighbors(g, v)
             if colors[neighbor] != 0
                 available[colors[neighbor]] = false

@@ -45,7 +45,7 @@ function BLAS_coloring(graph::AbstractGraph)
     W_int = reduce(+, A_T_int; dims=2)
 
     # Break ties with random weights
-    randomized_weights = gbrand(Float64, nv(graph), 1, 10.0)
+    randomized_weights = GBVector(rand(Float64, nv(graph)))
     randomized_weights .+= W_int
 
     color = 1
@@ -92,18 +92,16 @@ function BLAS_coloring_maxIS(graph::AbstractGraph)
     A_T_int = GBMatrix{Int}(Int.(A_T))
     C = GBVector{Int}(nv(graph); fill=0)
     max_W_in_neighbors = GBVector{Float32}(nv(graph); fill=Float32(0.0))
-    frontier = GBVector{Bool}(nv(graph); fill=false)
     independant_set = GBVector{Bool}(nv(graph); fill=false)
 
     # Assign weights to vertices based on their degree
     W = reduce(+, A_T_int; dims=2)
-
     # Break ties with random weights
-    randomized_weights_mat = gbrand(Float64, nv(graph), 1, 10.0)
-    randomized_weights = GBVector{Float64}(nv(graph); fill=0.0)
+    randomized_weights_mat = rand(Float32, nv(graph))
+    randomized_weights = GBVector{Float32}(randomized_weights_mat)
     eadd!(
         randomized_weights,
-        randomized_weights_mat,
+        randomized_weights,
         W;
         mask=C,
         desc=Descriptor(;
@@ -115,10 +113,9 @@ function BLAS_coloring_maxIS(graph::AbstractGraph)
     )
     randomized_weights .+= W
     color = 1
-    randomized_weights_ow = GBVector{Float64}(nv(graph); fill=0.0)
+    randomized_weights_ow = GBVector{Float32}(nv(graph); fill=Float32(0.0))
     while true
-        ignore = GBVector{Bool}(nv(graph); fill=false)
-        ignore = C .> 0
+        ignore = GBVector{Bool}(C .> 0; fill=false)
         empty!(independant_set)
 
         assign!(
@@ -134,7 +131,10 @@ function BLAS_coloring_maxIS(graph::AbstractGraph)
             ),
         )
         # Compute the maximal independant set
-        max_IS_inner!(A_T, randomized_weights_ow, independant_set, ignore)
+        println("color : ", color)
+        max_IS_inner!(
+            A_T, randomized_weights_ow, independant_set, ignore, max_W_in_neighbors
+        )
         #println("independant_set : ", independant_set)
 
         # Color the maximal independant set we just found with the current color
@@ -176,12 +176,12 @@ end
 # Ignore = C : the vertices that have already been colored are ignored from start
 function max_IS_inner!(
     A_T::GBMatrix{Bool},
-    randomized_weights::GBVector{Float64},
+    randomized_weights::GBVector{Float32},
     independant_set::GBVector{Bool},
     ignore::GBVector{Bool},
+    max_W_in_neighbors::GBVector{Float32},
 )
     n = size(A_T, 1)
-    max_W_in_neighbors = GBVector{Float32}(n; fill=Float32(0.0))
     frontier = GBVector{Bool}(n; fill=false)
     empty!(frontier)
 
@@ -193,7 +193,7 @@ function max_IS_inner!(
             max_W_in_neighbors,
             A_T,
             randomized_weights,
-            (max, *);
+            (max, second);
             mask=ignore,
             desc=Descriptor(;
                 nthreads=Threads.nthreads(),
