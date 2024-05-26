@@ -131,7 +131,6 @@ function BLAS_coloring_maxIS(graph::AbstractGraph)
             ),
         )
         # Compute the maximal independant set
-        println("color : ", color)
         max_IS_inner!(
             A_T, randomized_weights_ow, independant_set, ignore, max_W_in_neighbors
         )
