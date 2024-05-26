@@ -48,7 +48,7 @@ using SuiteSparseGraphBLAS:
     extract!,
     Monoid,
     Descriptor,
-    gbrand
+    gbset
 
 using SuiteSparseGraphBLAS.BinaryOps: ∨
 
