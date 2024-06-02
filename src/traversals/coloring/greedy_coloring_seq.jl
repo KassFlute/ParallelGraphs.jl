@@ -1,18 +1,6 @@
 using Random
 
 """
-    Struct to store the coloring of a graph.
-
-    num_colors: Number of colors used in the coloring.
-    colors: Vector of length `n` where `n` is the number of vertices in the graph.
-            The `i`-th element of the vector is the color assigned to the `i`-th vertex.
-"""
-struct Coloring{T<:Integer}
-    num_colors::T
-    colors::Vector{T}
-end
-
-"""
     Function to perform a greedy coloring of a graph.
 
     g: Graph to be colored.
@@ -25,10 +13,11 @@ function greedy_coloring(g::AbstractGraph, order::Vector{Int})
     n = nv(g)
     colors = fill(0, n)
     max_color = 0
+    nvg = nv(g)
 
     # Loop through the vertices in the given order
     for v in order
-        available = fill(true, max_color)
+        available = available = fill(true, max_color)
         for neighbor in all_neighbors(g, v)
             if colors[neighbor] != 0
                 available[colors[neighbor]] = false
