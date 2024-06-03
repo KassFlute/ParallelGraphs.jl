@@ -12,7 +12,8 @@ using Graphs:
     grid,
     path_digraph,
     AbstractGraph,
-    adjacency_matrix
+    adjacency_matrix,
+    degree_greedy_color
 using SuiteSparseGraphBLAS:
     GBVector, GBMatrix, setstorageorder!, RowMajor, mul!, extract!, gbset, format, Monoid
 import Graphs.Parallel as GP
@@ -31,7 +32,7 @@ using Statistics: mean
 ### Benchmark setup ###
 #######################
 
-SIZES_TO_GENERATE = [10, 100, 1000, 10000] # sizes in number of vertices
+SIZES_TO_GENERATE = [10, 100, 1000, 10000, 100000] # sizes in number of vertices
 
 # BenchmarkTools parameters
 BenchmarkTools.DEFAULT_PARAMETERS.samples = 10
@@ -177,6 +178,11 @@ function bench_Coloring(bg::BenchGraphs)
         $bg.graph
     ) evals = 1
 
+   # Graph.jl implementation
+    SUITE["Coloring"][string(bg.type) * ": " * bg.name][bg.size]["graphs.jl_seq"] = @benchmarkable degree_greedy_color(
+        $bg.graph
+    ) evals = 1 
+
     return SUITE
 end
 
@@ -198,6 +204,13 @@ for graph in bench_graphs
     end
     graph_name = string(graph.type) * ": " * graph.name
     push!(data_colors, (graph_name, graph.size, "seq_degree", color_runs))
+
+    color_runs = []
+    for _ in 1:coloring_sample
+        num_colors = degree_greedy_color(graph.graph).num_colors
+        push!(color_runs, num_colors)
+    end
+    push!(data_colors, (graph_name, graph.size, "graphs.jl_seq", color_runs))
 end
 
 ##############################
