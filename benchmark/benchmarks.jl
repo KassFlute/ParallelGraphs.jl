@@ -13,7 +13,8 @@ using Graphs:
     path_digraph,
     AbstractGraph,
     adjacency_matrix,
-    degree_greedy_color
+    degree_greedy_color,
+    greedy_color
 using SuiteSparseGraphBLAS:
     GBVector, GBMatrix, setstorageorder!, RowMajor, mul!, extract!, gbset, format, Monoid
 import Graphs.Parallel as GP
@@ -173,13 +174,28 @@ println("OK (", length(bench_graphs), " added)")
 Create a benchmark for Coloring on a graph `g` and store it in the global `SUITE` variable.
 """
 function bench_Coloring(bg::BenchGraphs)
-    # Our sequential
+    # Our degree sequential
     SUITE["Coloring"][string(bg.type) * ": " * bg.name][bg.size]["seq"] = @benchmarkable ParallelGraphs.degree_order_and_color(
         $bg.graph
     ) evals = 1
 
-    # Graph.jl implementation
+    # Our random sequential
+    SUITE["Coloring"][string(bg.type) * ": " * bg.name][bg.size]["seq_random"] = @benchmarkable ParallelGraphs.shuffle_and_color(
+        $bg.graph
+    ) evals = 1
+
+    # Our BLAS
+    SUITE["Coloring"][string(bg.type) * ": " * bg.name][bg.size]["BLAS"] = @benchmarkable ParallelGraphs.BLAS_coloring_maxIS(
+        $bg.graph
+    ) evals = 1
+
+    # Graph.jl degree sequential
     SUITE["Coloring"][string(bg.type) * ": " * bg.name][bg.size]["graphs.jl_seq"] = @benchmarkable degree_greedy_color(
+        $bg.graph
+    ) evals = 1
+
+    # Graph.jl random sequential
+    SUITE["Coloring"][string(bg.type) * ": " * bg.name][bg.size]["graphs.jl_seq_random"] = @benchmarkable greedy_color(
         $bg.graph
     ) evals = 1
 
@@ -197,13 +213,28 @@ coloring_sample = 10
 data_colors = DataFrame(; graph=[], size=[], algo_implem=[], color_numbers=[])
 
 for graph in bench_graphs
+    graph_name = string(graph.type) * ": " * graph.name
+
     color_runs = []
     for _ in 1:coloring_sample
         num_colors = ParallelGraphs.degree_order_and_color(graph.graph).num_colors
         push!(color_runs, num_colors)
     end
-    graph_name = string(graph.type) * ": " * graph.name
     push!(data_colors, (graph_name, graph.size, "seq_degree", color_runs))
+
+    color_runs = []
+    for _ in 1:coloring_sample
+        num_colors = ParallelGraphs.shuffle_and_color(graph.graph).num_colors
+        push!(color_runs, num_colors)
+    end
+    push!(data_colors, (graph_name, graph.size, "seq_random", color_runs))
+
+    color_runs = []
+    for _ in 1:coloring_sample
+        num_colors = ParallelGraphs.BLAS_coloring_maxIS(graph.graph).num_colors
+        push!(color_runs, num_colors)
+    end
+    push!(data_colors, (graph_name, graph.size, "BLAS", color_runs))
 
     color_runs = []
     for _ in 1:coloring_sample
@@ -211,6 +242,13 @@ for graph in bench_graphs
         push!(color_runs, num_colors)
     end
     push!(data_colors, (graph_name, graph.size, "graphs.jl_seq", color_runs))
+
+    color_runs = []
+    for _ in 1:coloring_sample
+        num_colors = greedy_color(graph.graph).num_colors
+        push!(color_runs, num_colors)
+    end
+    push!(data_colors, (graph_name, graph.size, "graphs.jl_seq_random", color_runs))
 end
 
 ##############################
