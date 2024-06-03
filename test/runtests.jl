@@ -471,10 +471,12 @@ using GraphIO.GML: GMLFormat
                 # Color the graph with different orders
                 coloring1 = ParallelGraphs.greedy_coloring(graph, order1)
                 coloring2 = ParallelGraphs.greedy_coloring(graph, order2)
+                coloring3 = ParallelGraphs.max_is_coloring(graph)
 
                 # Ensure all vertices are colored
                 @test all(coloring1.colors .!= 0)
                 @test all(coloring2.colors .!= 0)
+                @test all(coloring3.colors .!= 0)
 
                 # Ensure the number of colors used is minimal
                 @test coloring1.num_colors == 2
@@ -485,6 +487,7 @@ using GraphIO.GML: GMLFormat
                     for neighbor in neighbors(graph, v)
                         @test coloring1.colors[v] != coloring1.colors[neighbor]
                         @test coloring2.colors[v] != coloring2.colors[neighbor]
+                        @test coloring3.colors[v] != coloring3.colors[neighbor]
                     end
                 end
             end
@@ -507,10 +510,12 @@ using GraphIO.GML: GMLFormat
                 # Color the graph with different orders
                 coloring1 = ParallelGraphs.greedy_coloring(graph, order1)
                 coloring2 = ParallelGraphs.greedy_coloring(graph, order2)
+                coloring3 = ParallelGraphs.max_is_coloring(graph)
 
                 # Ensure all vertices are colored
                 @test all(coloring1.colors .!= 0)
                 @test all(coloring2.colors .!= 0)
+                @test all(coloring3.colors .!= 0)
 
                 # Ensure the number of colors used is minimal
                 @test coloring1.num_colors == 2
@@ -521,6 +526,7 @@ using GraphIO.GML: GMLFormat
                     for neighbor in neighbors(graph, v)
                         @test coloring1.colors[v] != coloring1.colors[neighbor]
                         @test coloring2.colors[v] != coloring2.colors[neighbor]
+                        @test coloring3.colors[v] != coloring3.colors[neighbor]
                     end
                 end
             end
@@ -541,10 +547,12 @@ using GraphIO.GML: GMLFormat
                 # Color the graph with different orders
                 coloring1 = ParallelGraphs.greedy_coloring(graph, order1)
                 coloring2 = ParallelGraphs.greedy_coloring(graph, order2)
+                coloring3 = ParallelGraphs.max_is_coloring(graph)
 
                 # Ensure all vertices are colored
                 @test all(coloring1.colors .!= 0)
                 @test all(coloring2.colors .!= 0)
+                @test all(coloring3.colors .!= 0)
 
                 # Ensure the number of colors used is minimal
                 @test coloring1.num_colors == 3
@@ -555,6 +563,7 @@ using GraphIO.GML: GMLFormat
                     for neighbor in outneighbors(graph, v)
                         @test coloring1.colors[v] != coloring1.colors[neighbor]
                         @test coloring2.colors[v] != coloring2.colors[neighbor]
+                        @test coloring3.colors[v] != coloring3.colors[neighbor]
                     end
                 end
             end
@@ -584,22 +593,27 @@ using GraphIO.GML: GMLFormat
                 coloring2 = ParallelGraphs.shuffle_and_color_n_times(graph, 10)
                 coloring3 = ParallelGraphs.degree_order_and_color(graph)
                 coloring4 = ParallelGraphs.degree_order_and_color_n_times(graph, 10)
+                coloring5 = ParallelGraphs.max_is_coloring(graph)
 
                 # Ensure all vertices are colored
                 @test all(coloring1.colors .!= 0)
                 @test all(coloring2.colors .!= 0)
                 @test all(coloring3.colors .!= 0)
                 @test all(coloring4.colors .!= 0)
+                @test all(coloring5.colors .!= 0)
 
                 # Ensure the number of colors used is bound between [<= max degree + 1] and [>= 1]
                 @test coloring1.num_colors <= maximum(degree(graph)) + 1
                 @test coloring2.num_colors <= maximum(degree(graph)) + 1
                 @test coloring3.num_colors <= maximum(degree(graph)) + 1
                 @test coloring4.num_colors <= maximum(degree(graph)) + 1
+                @test coloring5.num_colors <= maximum(degree(graph)) + 1
+
                 @test coloring1.num_colors >= 1
                 @test coloring2.num_colors >= 1
                 @test coloring3.num_colors >= 1
                 @test coloring4.num_colors >= 1
+                @test coloring5.num_colors >= 1
 
                 # Ensure adjacent vertices have different colors
                 for v in 1:nv(graph)
@@ -608,6 +622,7 @@ using GraphIO.GML: GMLFormat
                         @test coloring2.colors[v] != coloring2.colors[neighbor]
                         @test coloring3.colors[v] != coloring3.colors[neighbor]
                         @test coloring4.colors[v] != coloring4.colors[neighbor]
+                        @test coloring5.colors[v] != coloring5.colors[neighbor]
                     end
                 end
             end
