@@ -185,7 +185,7 @@ function bench_Coloring(bg::BenchGraphs)
     ) evals = 1
 
     # Our BLAS
-    SUITE["Coloring"][string(bg.type) * ": " * bg.name][bg.size]["BLAS"] = @benchmarkable ParallelGraphs.BLAS_coloring_maxIS(
+    SUITE["Coloring"][string(bg.type) * ": " * bg.name][bg.size]["BLAS"] = @benchmarkable ParallelGraphs.BLAS_coloring_degree(
         $bg.graph
     ) evals = 1
 
@@ -231,7 +231,7 @@ for graph in bench_graphs
 
     color_runs = []
     for _ in 1:coloring_sample
-        num_colors = ParallelGraphs.BLAS_coloring_maxIS(graph.graph).num_colors
+        num_colors = ParallelGraphs.BLAS_coloring_degree(graph.graph).num_colors
         push!(color_runs, num_colors)
     end
     push!(data_colors, (graph_name, graph.size, "BLAS", color_runs))
