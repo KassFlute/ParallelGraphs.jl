@@ -111,18 +111,17 @@ function max_is_coloring_seq(g::AbstractGraph, order::Vector{Int})
     banned = falses(n)
     while true
         banned .= false
-        for i in colored 
-            banned[i] = true 
+        for i in colored
+            banned[i] = true
         end
         # Find a maximum independent set
         for v in order
-            if (banned[v]==false)
+            if (banned[v] == false)
                 push!(indep_set, v)
                 for neighbor in all_neighbors(g, v)
                     banned[neighbor] = true
                 end
             end
-            
         end
         if length(indep_set) == 0
             break
