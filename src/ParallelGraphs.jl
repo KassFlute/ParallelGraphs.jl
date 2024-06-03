@@ -69,7 +69,7 @@ export bfs_seq,
     bfs_BLAS!,
     shuffle_and_color,
     shuffle_and_color_n_times,
-    degree_order_and_color
+    degree_order_and_color,
     degree_order_and_color_n_times,
     BLAS_coloring,
     BLAS_coloring_maxIS,
