@@ -72,7 +72,7 @@ export bfs_seq,
     degree_order_and_color,
     degree_order_and_color_n_times,
     max_is_coloring,
-    BLAS_coloring,
+    BLAS_coloring_degree,
     BLAS_coloring_maxIS,
     Coloring
 
