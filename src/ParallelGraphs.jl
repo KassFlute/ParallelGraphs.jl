@@ -34,6 +34,7 @@ using SuiteSparseGraphBLAS:
     second,
     min,
     *,
+    +,
     any,
     secondi,
     mask!,
@@ -46,7 +47,8 @@ using SuiteSparseGraphBLAS:
     assign!,
     extract!,
     Monoid,
-    Descriptor
+    Descriptor,
+    gbset
 
 using SuiteSparseGraphBLAS.BinaryOps: ∨
 
@@ -55,6 +57,7 @@ include("traversals/BFS/bfs_seq.jl")
 include("traversals/BFS/bfs_par.jl")
 include("traversals/BFS/bfs_BLAS.jl")
 include("traversals/coloring/greedy_coloring_seq.jl")
+include("traversals/coloring/BLAS_coloring.jl")
 
 export bfs_seq,
     bfs_par,
@@ -66,5 +69,9 @@ export bfs_seq,
     bfs_BLAS!,
     shuffle_and_color_n_times,
     degree_order_and_color
+    degree_order_and_color_n_times,
+    BLAS_coloring,
+    BLAS_coloring_maxIS,
+    Coloring
 
 end
