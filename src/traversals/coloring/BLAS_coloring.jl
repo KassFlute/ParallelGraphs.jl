@@ -1,126 +1,43 @@
-# Descriptors
-const normal_mask_desc = Descriptor(;
-    nthreads=Threads.nthreads(), replace_output=true, structural_mask=true
-)
-const complement_mask_desc = Descriptor(;
-    nthreads=Threads.nthreads(),
-    replace_output=true,
-    structural_mask=true,
-    complement_mask=true,
-)
-const complement_acc_desc = Descriptor(;
-    nthreads=Threads.nthreads(), structural_mask=true, complement_mask=true
-)
-const complement_mask_noStruct_desc = Descriptor(;
-    nthreads=Threads.nthreads(),
-    replace_output=true,
-    structural_mask=false,
-    complement_mask=true,
-)
-const value_mask_desc = Descriptor(; nthreads=Threads.nthreads())
+"""
+    Function to perform a greedy coloring of a graph using GraphBLAS. This method will color the graph using the Largest Degree First euristic.
 
-function BLAS_coloring(graph::AbstractGraph)
-    if nv(graph) == 0
-        return []
-    end
-    A_T = GBMatrix{Bool}((adjacency_matrix(graph, Bool; dir=:in)))
-    A_T_int = GBMatrix{Int}(Int.(A_T))
-    C = GBVector{Int}(nv(graph); fill=0)
-    max_W_in_neighbors = GBVector{Float64}(nv(graph); fill=Float64(0.0))
-    frontier = GBVector{Bool}(nv(graph); fill=false)
-
-    # Descriptors
-    normal_mask_desc = Descriptor(;
-        nthreads=Threads.nthreads(), replace_output=true, structural_mask=true
-    )
-    complement_mask_desc = Descriptor(;
-        nthreads=Threads.nthreads(),
-        replace_output=true,
-        structural_mask=true,
-        complement_mask=true,
-    )
-    value_mask_desc = Descriptor(; nthreads=Threads.nthreads())
-
-    # Assign weights to vertices based on their degree
-    W_int = reduce(+, A_T_int; dims=2)
-
-    # Break ties with random weights
-    randomized_weights = GBVector(rand(Float64, nv(graph)))
-    randomized_weights .+= W_int
-
-    color = 1
-    while true
-        mul!(
-            max_W_in_neighbors,
-            A_T,
-            randomized_weights,
-            (max, *);
-            mask=C,
-            desc=complement_mask_desc,
-        )
-        eadd!(
-            frontier,
-            randomized_weights,
-            max_W_in_neighbors,
-            >;
-            mask=C,
-            desc=complement_mask_desc,
-        )
-        succ = reduce(∨, frontier)
-        if !succ
-            return Coloring(color - 1, C)
-        else
-            apply!(*, C, color, frontier; mask=frontier, desc=value_mask_desc)
-            apply!(
-                *,
-                randomized_weights,
-                0,
-                randomized_weights;
-                mask=frontier,
-                desc=value_mask_desc,
-            )
-            color += 1
-        end
-    end
+    g: Graph to be colored.
+    
+    Returns a `Coloring` struct with the coloring of the graph.
+"""
+function BLAS_coloring_degree(graph::AbstractGraph)
+    order = sortperm(degree(graph); rev=true)
+    return BLAS_coloring_maxIS(graph, order)
 end
 
-function BLAS_coloring_maxIS(graph::AbstractGraph)
+"""
+    Function to perform a greedy coloring of a graph using GraphBLAS. The vertices are colored in the order given by the `order` vector.
+    This will color the vertices in parallel using maximum independant sets.
+
+    g: Graph to be colored.
+    order: Order in which the vertices will be colored.
+    
+    Returns a `Coloring` struct with the coloring of the graph.
+"""
+function BLAS_coloring_maxIS(graph::AbstractGraph, order::Vector{Int})
     if nv(graph) == 0
         return []
     end
-    A_T = GBMatrix{Bool}((adjacency_matrix(graph, Bool; dir=:in)))
-    A_T_int = GBMatrix{Int}(Int.(A_T))
+    A_T = GBMatrix{Bool}((adjacency_matrix(graph, Bool; dir=:both)))
     C = GBVector{Int}(nv(graph); fill=0)
-    max_W_in_neighbors = GBVector{Float32}(nv(graph); fill=Float32(0.0))
+    max_W_in_neighbors = GBVector{Int}(nv(graph); fill=0)
     independant_set = GBVector{Bool}(nv(graph); fill=false)
 
-    # Assign weights to vertices based on their degree
-    W = reduce(+, A_T_int; dims=2)
-    # Break ties with random weights
-    randomized_weights_mat = rand(Float32, nv(graph))
-    randomized_weights = GBVector{Float32}(randomized_weights_mat)
-    eadd!(
-        randomized_weights,
-        randomized_weights,
-        W;
-        mask=C,
-        desc=Descriptor(;
-            nthreads=Threads.nthreads(),
-            replace_output=true,
-            structural_mask=false,
-            complement_mask=true,
-        ),
-    )
-    randomized_weights .+= W
+    weights = GBVector{Int}(order)
     color = 1
-    randomized_weights_ow = GBVector{Float32}(nv(graph); fill=Float32(0.0))
+    randomized_weights_ow = GBVector{Int}(nv(graph); fill=0)
     while true
         ignore = GBVector{Bool}(C .> 0; fill=false)
         empty!(independant_set)
 
         assign!(
             randomized_weights_ow,
-            randomized_weights,
+            weights,
             range(1, nv(graph));
             mask=ignore,
             desc=Descriptor(;
@@ -157,9 +74,9 @@ function BLAS_coloring_maxIS(graph::AbstractGraph)
         #println("C : ", C)
         apply!(
             *,
-            randomized_weights,
+            weights,
             0,
-            randomized_weights;
+            weights;
             mask=independant_set,
             desc=Descriptor(;
                 nthreads=Threads.nthreads(),
@@ -172,13 +89,23 @@ function BLAS_coloring_maxIS(graph::AbstractGraph)
     end
 end
 
-# Ignore = C : the vertices that have already been colored are ignored from start
+"""
+    Helper function to find a maximum independent set of a graph using GraphBLAS.
+
+        A_T : Transposed adjacency matrix of the graph.
+        randomized_weights : Randomized weights of the vertices. The weights will be overwritten.
+        independant_set : Independant set to be filled.
+        ignore : Vertices to ignore (already colored).
+        max_W_in_neighbors : pre-constructed vector to store the maximum weight in the neighbors of each vertex.
+    
+    Returns a `Coloring` struct with the coloring of the graph.
+"""
 function max_IS_inner!(
     A_T::GBMatrix{Bool},
-    randomized_weights::GBVector{Float32},
+    randomized_weights::GBVector{Int},
     independant_set::GBVector{Bool},
     ignore::GBVector{Bool},
-    max_W_in_neighbors::GBVector{Float32},
+    max_W_in_neighbors::GBVector{Int},
 )
     n = size(A_T, 1)
     frontier = GBVector{Bool}(n; fill=false)
