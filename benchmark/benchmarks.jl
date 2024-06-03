@@ -178,10 +178,10 @@ function bench_Coloring(bg::BenchGraphs)
         $bg.graph
     ) evals = 1
 
-   # Graph.jl implementation
+    # Graph.jl implementation
     SUITE["Coloring"][string(bg.type) * ": " * bg.name][bg.size]["graphs.jl_seq"] = @benchmarkable degree_greedy_color(
         $bg.graph
-    ) evals = 1 
+    ) evals = 1
 
     return SUITE
 end
