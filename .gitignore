@@ -9,3 +9,8 @@ Q.md
 /benchmark/*.json
 benchmark/data/com-friendster.ungraph.txt
 benchmark/data/LiveJournal.txt
+benchmark/res/out.csv
+benchmark/out/benchmarks.csv
+
+benchmark/out/
+julia_citations.bib
