@@ -25,8 +25,7 @@ using GraphIO.GML: GMLFormat
 using DataFrames
 using CSV
 using Plots
-using Statistics:
-    mean
+using Statistics: mean
 
 #######################
 ### Benchmark setup ###
@@ -201,7 +200,6 @@ for graph in bench_graphs
     push!(data_colors, (graph_name, graph.size, "seq_degree", color_runs))
 end
 
-
 ##############################
 ### benchmarks run methods ###
 ##############################
@@ -237,7 +235,9 @@ function parse_colors()
 end
 
 function plot_BFS_results(data::DataFrame)
-    markers = [:circle, :cross, :diamond, :dtriangle, :heptagon, :hexagon, :hline, :ltriangle]
+    markers = [
+        :circle, :cross, :diamond, :dtriangle, :heptagon, :hexagon, :hline, :ltriangle
+    ]
     data = filter(row -> row.tested_algo == "BFS", data)
     grouped_by_graph = groupby(data, :graph)
     for (i, graph_group) in enumerate(grouped_by_graph)
@@ -257,7 +257,7 @@ function plot_BFS_results(data::DataFrame)
                 sorted_group.minimum_time;
                 label=string(sorted_group.algo_implem[1]),
                 seriestype=:line,
-                marker=markers[j]
+                marker=markers[j],
             )
         end
         filename = "benchmark/out/plot_BFS_$(graph_group.graph[1])_$(i).png"
@@ -267,7 +267,9 @@ function plot_BFS_results(data::DataFrame)
 end
 
 function plot_coloring_results(data::DataFrame, colors::DataFrame)
-    markers = [:circle, :cross, :diamond, :dtriangle, :heptagon, :hexagon, :hline, :ltriangle]
+    markers = [
+        :circle, :cross, :diamond, :dtriangle, :heptagon, :hexagon, :hline, :ltriangle
+    ]
     data = filter(row -> row.tested_algo == "Coloring", data)
     grouped_by_graph = groupby(data, :graph)
     for (i, graph_group) in enumerate(grouped_by_graph)
@@ -287,7 +289,7 @@ function plot_coloring_results(data::DataFrame, colors::DataFrame)
                 sorted_group.minimum_time;
                 label=string(sorted_group.algo_implem[1]),
                 seriestype=:line,
-                marker=markers[j]
+                marker=markers[j],
             )
         end
         filename = "benchmark/out/plot_Coloring_$(graph_group.graph[1])_$(i)_times.png"
@@ -314,7 +316,7 @@ function plot_coloring_results(data::DataFrame, colors::DataFrame)
                 mean.(sorted_group.color_numbers);
                 label=string(sorted_group.algo_implem[1]),
                 seriestype=:line,
-                marker=markers[j]
+                marker=markers[j],
             )
         end
         filename = "benchmark/out/plot_Coloring_$(graph_group.graph[1])_$(i)_colors.png"
