@@ -13,7 +13,6 @@ function greedy_coloring(g::AbstractGraph, order::Vector{Int})
     n = nv(g)
     colors = fill(0, n)
     max_color = 0
-    nvg = nv(g)
 
     # Loop through the vertices in the given order
     for v in order
@@ -96,4 +95,43 @@ function degree_order_and_color_n_times(g::AbstractGraph, n::Int)
         end
     end
     return best_coloring
+end
+
+function max_is_coloring(g::AbstractGraph)
+    order = sortperm(degree(g); rev=true)
+    return max_is_coloring_seq(g, order)
+end
+
+function max_is_coloring_seq(g::AbstractGraph, order::Vector{Int})
+    n = nv(g)
+    colors = fill(0, n)
+    max_color = 0
+    colored = Set{Int}()
+    indep_set = Set{Int}()
+    banned = falses(n)
+    while true
+        banned .= false
+        for i in colored
+            banned[i] = true
+        end
+        # Find a maximum independent set
+        for v in order
+            if (banned[v] == false)
+                push!(indep_set, v)
+                for neighbor in all_neighbors(g, v)
+                    banned[neighbor] = true
+                end
+            end
+        end
+        if length(indep_set) == 0
+            break
+        end
+        max_color += 1
+        for v in indep_set
+            colors[v] = max_color
+            push!(colored, v)
+        end
+        empty!(indep_set)
+    end
+    return Coloring(max_color, colors)
 end

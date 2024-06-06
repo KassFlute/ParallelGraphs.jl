@@ -35,7 +35,7 @@ using PythonCall
 ### Benchmark setup ###
 #######################
 
-SIZES_TO_GENERATE = [10, 100, 1000, 10000] # sizes in number of vertices
+SIZES_TO_GENERATE = [10, 100, 1000, 10000, 100000] # sizes in number of vertices
 
 # BenchmarkTools parameters
 BenchmarkTools.DEFAULT_PARAMETERS.samples = 10
@@ -207,7 +207,7 @@ function bench_Coloring(bg::BenchGraphs)
     ) evals = 1
 
     # Our BLAS
-    SUITE["Coloring"][string(bg.type) * ": " * bg.name][bg.size]["BLAS"] = @benchmarkable ParallelGraphs.BLAS_coloring_maxIS(
+    SUITE["Coloring"][string(bg.type) * ": " * bg.name][bg.size]["BLAS"] = @benchmarkable ParallelGraphs.BLAS_coloring_degree(
         $bg.graph
     ) evals = 1
 
@@ -253,7 +253,7 @@ for graph in bench_graphs
 
     color_runs = []
     for _ in 1:coloring_sample
-        num_colors = ParallelGraphs.BLAS_coloring_maxIS(graph.graph).num_colors
+        num_colors = ParallelGraphs.BLAS_coloring_degree(graph.graph).num_colors
         push!(color_runs, num_colors)
     end
     push!(data_colors, (graph_name, graph.size, "BLAS", color_runs))
@@ -333,7 +333,7 @@ function plot_BFS_results(data::DataFrame)
                 marker=markers[j],
             )
         end
-        filename = "benchmark/out/plot_BFS_$(graph_group.graph[1]).png"
+        filename = "benchmark/out/plot_BFS_$(graph_group.graph[1])_$(i).png"
         savefig(p, filename)
         println("Saved plot to $filename")
     end
@@ -365,7 +365,7 @@ function plot_coloring_results(data::DataFrame, colors::DataFrame)
                 marker=markers[j],
             )
         end
-        filename = "benchmark/out/plot_Coloring_$(graph_group.graph[1])_times.png"
+        filename = "benchmark/out/plot_Coloring_$(graph_group.graph[1])_$(i)_times.png"
         savefig(p, filename)
         println("Saved plot to $filename")
     end
@@ -392,7 +392,7 @@ function plot_coloring_results(data::DataFrame, colors::DataFrame)
                 marker=markers[j],
             )
         end
-        filename = "benchmark/out/plot_Coloring_$(graph_group.graph[1])_colors.png"
+        filename = "benchmark/out/plot_Coloring_$(graph_group.graph[1])_$(i)_colors.png"
         savefig(p, filename)
         println("Saved plot to $filename")
     end

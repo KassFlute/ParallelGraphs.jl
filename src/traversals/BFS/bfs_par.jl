@@ -120,7 +120,7 @@ function bfs_par_local!(
 end
 
 """
-    bfs_par_tree(graph::AbstractGraph, source::T)
+    bfs_par(graph::AbstractGraph, source::T)
 
 Run a parallel BFS traversal on a graph and return the parent vertices of each vertex in the BFS tree in a new Array.
 
