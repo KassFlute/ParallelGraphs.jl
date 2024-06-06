@@ -35,7 +35,7 @@ using PythonCall
 ### Benchmark setup ###
 #######################
 
-SIZES_TO_GENERATE = [10, 100] # sizes in number of vertices
+SIZES_TO_GENERATE = [10, 100, 1000, 10000] # sizes in number of vertices
 
 # BenchmarkTools parameters
 BenchmarkTools.DEFAULT_PARAMETERS.samples = 10
@@ -100,10 +100,10 @@ println("OK")
 
 # Add imported graphs
 print("Import graphs...")
-# g = loadgraph(
-#     "benchmark/data/large_twitch_edges.csv", "twitch user network", EdgeListFormat()
-# )
-# push!(bench_graphs, BenchGraphs(g, nv(g), "large_twitch_edges.csv", IMPORT, 1))
+g = loadgraph(
+    "benchmark/data/large_twitch_edges.csv", "twitch user network", EdgeListFormat()
+)
+push!(bench_graphs, BenchGraphs(g, nv(g), "large_twitch_edges.csv", IMPORT, 1))
 println("OK")
 
 #push!(
