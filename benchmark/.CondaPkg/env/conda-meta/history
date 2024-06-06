@@ -1,5 +1,5 @@
-==> 2024-06-05 23:31:12 <==
-# cmd: /Users/cassien/.julia/artifacts/98aba21a6802e06a5d2e7c48633d7dc1c3d4a749/bin/micromamba -r /Users/cassien/.julia/scratchspaces/0b3b1443-0f03-428d-bdfb-f27f9c1191ea/root create -y -p /Users/cassien/Nextcloud/Documents/etudes/EPFL/BA6/PROJBACH/ParallelGraphs.jl/benchmark/.CondaPkg/env --override-channels --no-channel-priority python[version='>=3.8,<4',channel='conda-forge',build='*cpython*'] -c conda-forge
+==> 2024-06-06 23:44:01 <==
+# cmd: /Users/cassien/.julia/artifacts/98aba21a6802e06a5d2e7c48633d7dc1c3d4a749/bin/micromamba -r /Users/cassien/.julia/scratchspaces/0b3b1443-0f03-428d-bdfb-f27f9c1191ea/root create -y -p /Users/cassien/Nextcloud/Documents/etudes/EPFL/BA6/PROJBACH/ParallelGraphs.jl/benchmark/.CondaPkg/env --override-channels --no-channel-priority networkx[version='*'] python[version='>=3.8,<4',channel='conda-forge',build='*cpython*'] -c conda-forge
 # conda version: 3.8.0
 +https://conda.anaconda.org/conda-forge/osx-arm64::xz-5.2.6-h57fd34a_0
 +https://conda.anaconda.org/conda-forge/osx-arm64::libexpat-2.6.2-hebf3989_0
@@ -17,11 +17,5 @@
 +https://conda.anaconda.org/conda-forge/noarch::wheel-0.43.0-pyhd8ed1ab_1
 +https://conda.anaconda.org/conda-forge/noarch::setuptools-70.0.0-pyhd8ed1ab_0
 +https://conda.anaconda.org/conda-forge/noarch::pip-24.0-pyhd8ed1ab_0
-# update specs: ["conda-forge::python[version='>=3.8,<4',build=*cpython*]"]
-==> 2024-06-05 23:32:10 <==
-# cmd: /Users/cassien/.julia/artifacts/98aba21a6802e06a5d2e7c48633d7dc1c3d4a749/bin/micromamba -r /Users/cassien/.julia/scratchspaces/0b3b1443-0f03-428d-bdfb-f27f9c1191ea/root install -y -p /Users/cassien/Nextcloud/Documents/etudes/EPFL/BA6/PROJBACH/ParallelGraphs.jl/benchmark/.CondaPkg/env --override-channels --no-channel-priority networkx[version='*'] python[version='>=3.8,<4',channel='conda-forge',build='*cpython*'] -c conda-forge
-# conda version: 3.8.0
--https://conda.anaconda.org/conda-forge/osx-arm64::python-3.12.3-h4a7b5fc_0_cpython
-+https://conda.anaconda.org/conda-forge/osx-arm64::python-3.12.3-h4a7b5fc_0_cpython
 +https://conda.anaconda.org/conda-forge/noarch::networkx-3.3-pyhd8ed1ab_1
 # update specs: ["networkx=*", "conda-forge::python[version='>=3.8,<4',build=*cpython*]"]
