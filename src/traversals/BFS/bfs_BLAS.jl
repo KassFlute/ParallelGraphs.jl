@@ -26,9 +26,7 @@ end
 
 Perform a BFS traversal on a graph represented by its transpose adjacency matrix `A_T` starting from vertex `source` using GraphBLAS operations.
 """
-function bfs_BLAS!(
-    A_T::GBMatrix{Bool}, source::T, p::GBVector{T}
-) where {T<:Integer}
+function bfs_BLAS!(A_T::GBMatrix{Bool}, source::T, p::GBVector{T}) where {T<:Integer}
     p[source] = source
 
     temp1 = GBVector{Bool}(length(p); fill=false)
@@ -49,18 +47,33 @@ function bfs_BLAS!(
             ),
         )
         if reduce(∨, temp2) == false
-    f[source] = true
-    desc = Descriptor(; nthreads=Threads.nthreads())
-    temp = GBVector{T}(length(p); fill=zero(T))
-    for _ in 1:length(p)
-        empty!(temp)
-        mul!(temp, A_T, f, (any, secondi); mask=~p)
-        extract!(p, temp, 1:length(p); mask=temp)
-        empty!(f)
-        apply!(identity, f, temp; mask=temp)
-        if !reduce(∨, f)
             return nothing
         end
+
+        apply!(
+            identity,
+            temp1,
+            temp2;
+            mask=p,
+            desc=Descriptor(;
+                nthreads=Threads.nthreads(),
+                replace_output=false,
+                complement_mask=true,
+                structural_mask=true,
+            ),
+        )
+        apply!(
+            rowindex,
+            p,
+            temp2;
+            mask=p,
+            desc=Descriptor(;
+                nthreads=Threads.nthreads(),
+                replace_output=false,
+                complement_mask=true,
+                structural_mask=true,
+            ),
+        )
     end
     return nothing
 
