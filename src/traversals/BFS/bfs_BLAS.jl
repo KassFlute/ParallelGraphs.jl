@@ -30,14 +30,14 @@ function bfs_BLAS!(A_T::GBMatrix{Bool}, source::T, p::GBVector{T}) where {T<:Int
     p[source] = source
 
     temp1 = GBVector{Bool}(length(p); fill=false)
-    temp2 = GBVector{Bool}(length(p); fill=false)
+    temp2 = GBVector{T}(length(p); fill=zero(T))
     temp1[source] = true
     while true
         mul!(
             temp2,
             A_T,
             temp1,
-            (any, pair);
+            (any, secondi);
             mask=p,
             desc=Descriptor(;
                 nthreads=Threads.nthreads(),
@@ -46,9 +46,6 @@ function bfs_BLAS!(A_T::GBMatrix{Bool}, source::T, p::GBVector{T}) where {T<:Int
                 structural_mask=true,
             ),
         )
-        if reduce(∨, temp2) == false
-            return nothing
-        end
 
         apply!(
             identity,
@@ -57,13 +54,16 @@ function bfs_BLAS!(A_T::GBMatrix{Bool}, source::T, p::GBVector{T}) where {T<:Int
             mask=p,
             desc=Descriptor(;
                 nthreads=Threads.nthreads(),
-                replace_output=false,
+                replace_output=true,
                 complement_mask=true,
                 structural_mask=true,
             ),
         )
+        if reduce(∨, temp1) == false
+            return nothing
+        end
         apply!(
-            rowindex,
+            identity,
             p,
             temp2;
             mask=p,
