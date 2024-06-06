@@ -28,12 +28,13 @@ using DataFrames
 using CSV
 using Plots
 using Statistics: mean
+using PythonCall
 
 #######################
 ### Benchmark setup ###
 #######################
 
-SIZES_TO_GENERATE = [10, 100, 1000, 10000, 100000] # sizes in number of vertices
+SIZES_TO_GENERATE = [10, 100, 1000] # sizes in number of vertices
 
 # BenchmarkTools parameters
 BenchmarkTools.DEFAULT_PARAMETERS.samples = 10
@@ -48,6 +49,9 @@ if Threads.nthreads() == 1
 else
     @warn "Julia started with: $(Threads.nthreads()) threads."
 end
+
+# PythonCall setup
+nx = pyimport("networkx")
 
 ##################
 ### Add Graphs ###
@@ -155,6 +159,20 @@ function bench_BFS(bg::BenchGraphs)
         next_prepared, $bg.graph, $bg.start_vertex, parents_prepared
     ) evals = 1 setup = (next_prepared = GP.ThreadQueue(Int, nv($bg.graph));
     parents_prepared = [Atomic{Int}(0) for i in 1:nv($bg.graph)])
+
+    ## NetworkX implementation
+    g_networkx = nx.Graph()
+    for i in 1:nv(bg.graph)
+        g_networkx.add_edge(i, i)
+    end
+    for i in 1:nv(bg.graph)
+        for j in neighbors(bg.graph, i)
+            g_networkx.add_edge(i, j)
+        end
+    end
+    SUITE["BFS"][string(bg.type) * ": " * bg.name][bg.size]["networkx"] = @benchmarkable pylist(nx.bfs_edges(
+        $g_networkx, $bg.start_vertex
+    )) evals = 1
 
     return SUITE
 end
