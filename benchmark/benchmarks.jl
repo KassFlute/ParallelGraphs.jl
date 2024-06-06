@@ -99,10 +99,10 @@ println("OK")
 
 # Add imported graphs
 print("Import graphs...")
-# g = loadgraph(
-#     "benchmark/data/large_twitch_edges.csv", "twitch user network", EdgeListFormat()
-# )
-# push!(bench_graphs, BenchGraphs(g, nv(g), "large_twitch_edges.csv", IMPORT, 1))
+g = loadgraph(
+    "benchmark/data/large_twitch_edges.csv", "twitch user network", EdgeListFormat()
+)
+push!(bench_graphs, BenchGraphs(g, nv(g), "large_twitch_edges.csv", IMPORT, 1))
 println("OK")
 
 #push!(
@@ -329,7 +329,7 @@ function plot_BFS_results(data::DataFrame)
                 marker=markers[j],
             )
         end
-        filename = "benchmark/out/plot_BFS_$(graph_group.graph[1])_$(i).png"
+        filename = "benchmark/out/plot_BFS_$(graph_group.graph[1]).png"
         savefig(p, filename)
         println("Saved plot to $filename")
     end
@@ -361,7 +361,7 @@ function plot_coloring_results(data::DataFrame, colors::DataFrame)
                 marker=markers[j],
             )
         end
-        filename = "benchmark/out/plot_Coloring_$(graph_group.graph[1])_$(i)_times.png"
+        filename = "benchmark/out/plot_Coloring_$(graph_group.graph[1])_times.png"
         savefig(p, filename)
         println("Saved plot to $filename")
     end
@@ -388,7 +388,7 @@ function plot_coloring_results(data::DataFrame, colors::DataFrame)
                 marker=markers[j],
             )
         end
-        filename = "benchmark/out/plot_Coloring_$(graph_group.graph[1])_$(i)_colors.png"
+        filename = "benchmark/out/plot_Coloring_$(graph_group.graph[1])_colors.png"
         savefig(p, filename)
         println("Saved plot to $filename")
     end
