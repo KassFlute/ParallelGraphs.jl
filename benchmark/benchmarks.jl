@@ -38,8 +38,8 @@ using PythonCall
 # sizes in number of vertices
 #SIZES_TO_GENERATE_BFS = [200_000, 400_000, 1_000_000, 4_000_000]
 SIZES_TO_GENERATE_BFS = [100]
-SIZES_TO_GENERATE_COL = [10_000, 100_000, 300_000, 1_000_000]
-
+#SIZES_TO_GENERATE_COL = [10_000, 100_000, 300_000, 1_000_000]
+SIZES_TO_GENERATE_COL = [100]
 # BenchmarkTools parameters
 BenchmarkTools.DEFAULT_PARAMETERS.samples = 10
 BenchmarkTools.DEFAULT_PARAMETERS.seconds = Inf
@@ -149,12 +149,15 @@ push!(bench_graphs_bfs, BenchGraphs(g, nv(g), "large_twitch_edges.csv", IMPORT, 
 push!(bench_graphs_col, BenchGraphs(g, nv(g), "large_twitch_edges.csv", IMPORT, 5))
 println("OK")
 
-#push!(
-#    imported_graphs,
-#    loadgraph("benchmark/data/LiveJournal.txt", "live journal", EdgeListFormat()),
-#)
-#push!(names["Imported"], "live journal.txt")
-#push!(i_first_vertex, 1)
+g2 = loadgraph("benchmark/data/LiveJournal.txt", "live journal", EdgeListFormat())
+# g2 has self loops, remove them
+g2 = SimpleGraph(g2)
+for i in 1:nv(g2)
+    rem_edge!(g2, i, i)
+end
+push!(bench_graphs_bfs, BenchGraphs(g2, nv(g2), "LiveJournal.txt", IMPORT, 5))
+push!(bench_graphs_col, BenchGraphs(g2, nv(g2), "LiveJournal.txt", IMPORT, 5))
+
 
 #####################
 ### benchmark BFS ###
