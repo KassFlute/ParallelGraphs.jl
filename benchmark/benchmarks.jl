@@ -14,7 +14,8 @@ using Graphs:
     AbstractGraph,
     adjacency_matrix,
     degree_greedy_color,
-    greedy_color
+    greedy_color,
+    neighbors
 using SuiteSparseGraphBLAS:
     GBVector, GBMatrix, setstorageorder!, RowMajor, mul!, extract!, gbset, format, Monoid
 import Graphs.Parallel as GP
@@ -28,6 +29,7 @@ using DataFrames
 using CSV
 using Plots
 using Statistics: mean
+using PythonCall
 
 #######################
 ### Benchmark setup ###
@@ -48,6 +50,9 @@ if Threads.nthreads() == 1
 else
     @warn "Julia started with: $(Threads.nthreads()) threads."
 end
+
+# PythonCall setup
+nx = pyimport("networkx")
 
 ##################
 ### Add Graphs ###
@@ -95,10 +100,10 @@ println("OK")
 
 # Add imported graphs
 print("Import graphs...")
-# g = loadgraph(
-#     "benchmark/data/large_twitch_edges.csv", "twitch user network", EdgeListFormat()
-# )
-# push!(bench_graphs, BenchGraphs(g, nv(g), "large_twitch_edges.csv", IMPORT, 1))
+g = loadgraph(
+    "benchmark/data/large_twitch_edges.csv", "twitch user network", EdgeListFormat()
+)
+push!(bench_graphs, BenchGraphs(g, nv(g), "large_twitch_edges.csv", IMPORT, 1))
 println("OK")
 
 #push!(
@@ -155,6 +160,23 @@ function bench_BFS(bg::BenchGraphs)
         next_prepared, $bg.graph, $bg.start_vertex, parents_prepared
     ) evals = 1 setup = (next_prepared = GP.ThreadQueue(Int, nv($bg.graph));
     parents_prepared = [Atomic{Int}(0) for i in 1:nv($bg.graph)])
+
+    ## NetworkX implementation
+    g_networkx = nx.Graph()
+    for i in 1:nv(bg.graph)
+        g_networkx.add_edge(i, i)
+    end
+    for i in 1:nv(bg.graph)
+        for j in neighbors(bg.graph, i)
+            g_networkx.add_edge(i, j)
+        end
+    end
+    SUITE["BFS"][string(bg.type) * ": " * bg.name][bg.size]["networkx"] = @benchmarkable $(
+        nx.bfs_tree
+    )(
+        $g_networkx, $bg.start_vertex
+    )
+    evals = 1
 
     return SUITE
 end
