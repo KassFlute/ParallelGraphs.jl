@@ -13,4 +13,6 @@ benchmark/res/out.csv
 benchmark/out/benchmarks.csv
 
 benchmark/out/
+benchmark/.CondaPkg
+
 julia_citations.bib
