@@ -4,7 +4,7 @@
 benchmark/data/com-friendster.ungraph.txt
 .vscode/
 Q.md
-benchmark/.CondaPkg
+benchmark\.CondaPkg
 /.benchmarkci
 /benchmark/*.json
 benchmark/data/com-friendster.ungraph.txt
