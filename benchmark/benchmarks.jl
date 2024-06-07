@@ -36,8 +36,8 @@ using PythonCall
 #######################
 
 # sizes in number of vertices
-SIZES_TO_GENERATE_BFS = [10, 100, 1000, 10000]
-SIZES_TO_GENERATE_COL = [10, 100]
+SIZES_TO_GENERATE_BFS = [10, 100, 1000, 10000, 100000]
+SIZES_TO_GENERATE_COL = [10, 100, 1000]
 
 # BenchmarkTools parameters
 BenchmarkTools.DEFAULT_PARAMETERS.samples = 10
