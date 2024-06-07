@@ -80,20 +80,29 @@ bench_graphs_bfs = Vector{BenchGraphs}()
 print("Generate graphs...")
 for i in eachindex(SIZES)
     v = SIZES[i]
-    push!(bench_graphs_bfs, BenchGraphs(dorogovtsev_mendes(v), v, "dorogovtsev_mendes", GEN, 1))
     push!(
-        bench_graphs_bfs, BenchGraphs(barabasi_albert(v, 2), v, "barabasi_albert - 2", GEN, 1)
+        bench_graphs_bfs,
+        BenchGraphs(dorogovtsev_mendes(v), v, "dorogovtsev_mendes", GEN, 1),
     )
     push!(
-        bench_graphs_bfs, BenchGraphs(barabasi_albert(v, 8), v, "barabasi_albert - 8", GEN, 1)
+        bench_graphs_bfs,
+        BenchGraphs(barabasi_albert(v, 2), v, "barabasi_albert - 2", GEN, 1),
+    )
+    push!(
+        bench_graphs_bfs,
+        BenchGraphs(barabasi_albert(v, 8), v, "barabasi_albert - 8", GEN, 1),
     )
     push!(
         bench_graphs_bfs,
         BenchGraphs(binary_tree(round(Int, log2(v)) + 1), v, "binary_tree", GEN, 1),
     )
     #push!(generated_graphs, BenchGraphs(double_binary_tree(round(Int, log2(v))), "double_binary_tree", GENERATED, 1))
-    push!(bench_graphs_bfs, BenchGraphs(star_graph(v), v, "star_graph - center start", GEN, 1))
-    push!(bench_graphs_bfs, BenchGraphs(star_graph(v), v, "star_graph - border start", GEN, 2))
+    push!(
+        bench_graphs_bfs, BenchGraphs(star_graph(v), v, "star_graph - center start", GEN, 1)
+    )
+    push!(
+        bench_graphs_bfs, BenchGraphs(star_graph(v), v, "star_graph - border start", GEN, 2)
+    )
     N = round(Int, sqrt(sqrt(v)))
     push!(bench_graphs_bfs, BenchGraphs(grid([N, N, N, N]), v, "grid 4 dims", GEN, 1))
     #push!(generated_graphs, BenchGraphs(path_digraph(v), "path_digraph", GENERATED, round(Int, v / 2)))
@@ -103,19 +112,28 @@ SIZES = SIZES_TO_GENERATE_COL
 bench_graphs_col = Vector{BenchGraphs}()
 for i in eachindex(SIZES)
     v = SIZES[i]
-    push!(bench_graphs_col, BenchGraphs(dorogovtsev_mendes(v), v, "dorogovtsev_mendes", GEN, 1))
     push!(
-        bench_graphs_col, BenchGraphs(barabasi_albert(v, 2), v, "barabasi_albert - 2", GEN, 1)
+        bench_graphs_col,
+        BenchGraphs(dorogovtsev_mendes(v), v, "dorogovtsev_mendes", GEN, 1),
     )
     push!(
-        bench_graphs_col, BenchGraphs(barabasi_albert(v, 8), v, "barabasi_albert - 8", GEN, 1)
+        bench_graphs_col,
+        BenchGraphs(barabasi_albert(v, 2), v, "barabasi_albert - 2", GEN, 1),
+    )
+    push!(
+        bench_graphs_col,
+        BenchGraphs(barabasi_albert(v, 8), v, "barabasi_albert - 8", GEN, 1),
     )
     push!(
         bench_graphs_col,
         BenchGraphs(binary_tree(round(Int, log2(v)) + 1), v, "binary_tree", GEN, 1),
     )
-    push!(bench_graphs_col, BenchGraphs(star_graph(v), v, "star_graph - center start", GEN, 1))
-    push!(bench_graphs_col, BenchGraphs(star_graph(v), v, "star_graph - border start", GEN, 2))
+    push!(
+        bench_graphs_col, BenchGraphs(star_graph(v), v, "star_graph - center start", GEN, 1)
+    )
+    push!(
+        bench_graphs_col, BenchGraphs(star_graph(v), v, "star_graph - border start", GEN, 2)
+    )
     N = round(Int, sqrt(sqrt(v)))
     push!(bench_graphs_col, BenchGraphs(grid([N, N, N, N]), v, "grid 4 dims", GEN, 1))
 end
