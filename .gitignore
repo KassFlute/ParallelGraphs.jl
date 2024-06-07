@@ -4,7 +4,8 @@
 benchmark/data/com-friendster.ungraph.txt
 .vscode/
 Q.md
-benchmark\.CondaPkg
+
+
 /.benchmarkci
 /benchmark/*.json
 benchmark/data/com-friendster.ungraph.txt
@@ -12,7 +13,13 @@ benchmark/data/LiveJournal.txt
 benchmark/res/out.csv
 benchmark/out/benchmarks.csv
 benchmark/.Conda/Pkg
+benchmark/.Conda/Pkg/env
+benchmark\.CondaPkg
+benchmark\.CondaPkg\env
+
 
 
 benchmark/out/
 julia_citations.bib
+*.dll
+\benchmark\.
