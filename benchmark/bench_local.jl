@@ -1,7 +1,7 @@
 include("benchmarks.jl")
 
 print("Run benchmarks...")
-results = run(SUITE)
+results = run(SUITE, verbose=true)
 println("OK")
 
 print("Parse results...")

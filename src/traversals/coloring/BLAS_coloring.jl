@@ -6,8 +6,10 @@
     Returns a `Coloring` struct with the coloring of the graph.
 """
 function BLAS_coloring_degree(graph::AbstractGraph)
-    order = sortperm(degree(graph); rev=true)
-    return BLAS_coloring_maxIS(graph, order)
+    order = sortperm(degree(graph))
+
+    weights = GBVector{Int}(range(1, nv(graph))[invperm(order)])
+    return BLAS_coloring_maxIS(graph, weights)
 end
 
 """
@@ -19,7 +21,7 @@ end
     
     Returns a `Coloring` struct with the coloring of the graph.
 """
-function BLAS_coloring_maxIS(graph::AbstractGraph, order::Vector{Int})
+function BLAS_coloring_maxIS(graph::AbstractGraph, weights::GBVector{Int})
     if nv(graph) == 0
         return []
     end
@@ -28,7 +30,6 @@ function BLAS_coloring_maxIS(graph::AbstractGraph, order::Vector{Int})
     max_W_in_neighbors = GBVector{Int}(nv(graph); fill=0)
     independant_set = GBVector{Bool}(nv(graph); fill=false)
 
-    weights = GBVector{Int}(order)
     color = 1
     randomized_weights_ow = GBVector{Int}(nv(graph); fill=0)
     while true

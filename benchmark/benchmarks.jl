@@ -36,8 +36,9 @@ using PythonCall
 #######################
 
 # sizes in number of vertices
-SIZES_TO_GENERATE_BFS = [500_000]
-SIZES_TO_GENERATE_COL = [1_000]
+#SIZES_TO_GENERATE_BFS = [200_000, 400_000, 1_000_000, 4_000_000]
+SIZES_TO_GENERATE_BFS = [100]
+SIZES_TO_GENERATE_COL = [10_000, 100_000, 300_000, 1_000_000]
 
 # BenchmarkTools parameters
 BenchmarkTools.DEFAULT_PARAMETERS.samples = 10
@@ -84,28 +85,28 @@ for i in eachindex(SIZES)
         bench_graphs_bfs,
         BenchGraphs(dorogovtsev_mendes(v), v, "dorogovtsev_mendes", GEN, 1),
     )
-    #push!(
-    #    bench_graphs_bfs,
-    #    BenchGraphs(barabasi_albert(v, 2), v, "barabasi_albert - 2", GEN, 1),
-    #)
-    #push!(
-    #    bench_graphs_bfs,
-    #    BenchGraphs(barabasi_albert(v, 8), v, "barabasi_albert - 8", GEN, 1),
-    #)
-    #push!(
-    #    bench_graphs_bfs,
-    #    BenchGraphs(binary_tree(round(Int, log2(v)) + 1), v, "binary_tree", GEN, 1),
-    #)
-    ##push!(generated_graphs, BenchGraphs(double_binary_tree(round(Int, log2(v))), "double_binary_tree", GENERATED, 1))
+    push!(
+        bench_graphs_bfs,
+        BenchGraphs(barabasi_albert(v, 2), v, "barabasi_albert - 2", GEN, 1),
+    )
+    push!(
+        bench_graphs_bfs,
+        BenchGraphs(barabasi_albert(v, 8), v, "barabasi_albert - 8", GEN, 1),
+    )
+    push!(
+        bench_graphs_bfs,
+        BenchGraphs(binary_tree(round(Int, log2(v)) + 1), v, "binary_tree", GEN, 1),
+    )
+    #push!(generated_graphs, BenchGraphs(double_binary_tree(round(Int, log2(v))), "double_binary_tree", GENERATED, 1))
     #push!(
     #    bench_graphs_bfs, BenchGraphs(star_graph(v), v, "star_graph - center start", GEN, 1)
     #)
-    #push!(
-    #    bench_graphs_bfs, BenchGraphs(star_graph(v), v, "star_graph - border start", GEN, 2)
-    #)
-    #N = round(Int, sqrt(sqrt(v)))
-    #push!(bench_graphs_bfs, BenchGraphs(grid([N, N, N, N]), v, "grid 4 dims", GEN, 1))
-    ##push!(generated_graphs, BenchGraphs(path_digraph(v), "path_digraph", GENERATED, round(Int, v / 2)))
+    push!(
+        bench_graphs_bfs, BenchGraphs(star_graph(v), v, "star_graph - border start", GEN, 2)
+    )
+    N = round(Int, sqrt(sqrt(v)))
+    push!(bench_graphs_bfs, BenchGraphs(grid([N, N, N, N]), v, "grid 4 dims", GEN, 1))
+    #push!(generated_graphs, BenchGraphs(path_digraph(v), "path_digraph", GENERATED, round(Int, v / 2)))
 end
 
 SIZES = SIZES_TO_GENERATE_COL
@@ -116,36 +117,37 @@ for i in eachindex(SIZES)
         bench_graphs_col,
         BenchGraphs(dorogovtsev_mendes(v), v, "dorogovtsev_mendes", GEN, 1),
     )
-    #push!(
-    #    bench_graphs_col,
-    #    BenchGraphs(barabasi_albert(v, 2), v, "barabasi_albert - 2", GEN, 1),
-    #)
-    #push!(
-    #    bench_graphs_col,
-    #    BenchGraphs(barabasi_albert(v, 8), v, "barabasi_albert - 8", GEN, 1),
-    #)
-    #push!(
-    #    bench_graphs_col,
-    #    BenchGraphs(binary_tree(round(Int, log2(v)) + 1), v, "binary_tree", GEN, 1),
-    #)
+    push!(
+        bench_graphs_col,
+        BenchGraphs(barabasi_albert(v, 2), v, "barabasi_albert - 2", GEN, 1),
+    )
+    push!(
+        bench_graphs_col,
+        BenchGraphs(barabasi_albert(v, 8), v, "barabasi_albert - 8", GEN, 1),
+    )
+    push!(
+        bench_graphs_col,
+        BenchGraphs(binary_tree(round(Int, log2(v)) + 1), v, "binary_tree", GEN, 1),
+    )
     #push!(
     #    bench_graphs_col, BenchGraphs(star_graph(v), v, "star_graph - center start", GEN, 1)
     #)
-    #push!(
-    #    bench_graphs_col, BenchGraphs(star_graph(v), v, "star_graph - border start", GEN, 2)
-    #)
-    #N = round(Int, sqrt(sqrt(v)))
-    #push!(bench_graphs_col, BenchGraphs(grid([N, N, N, N]), v, "grid 4 dims", GEN, 1))
+    push!(
+        bench_graphs_col, BenchGraphs(star_graph(v), v, "star_graph - border start", GEN, 2)
+    )
+    N = round(Int, sqrt(sqrt(v)))
+    push!(bench_graphs_col, BenchGraphs(grid([N, N, N, N]), v, "grid 4 dims", GEN, 1))
 end
 println("OK")
 
-# Add imported graphs
-#print("Import graphs...")
-#g = loadgraph(
-#    "benchmark/data/large_twitch_edges.csv", "twitch user network", EdgeListFormat()
-#)
-#push!(bench_graphs_bfs, BenchGraphs(g, nv(g), "large_twitch_edges.csv", IMPORT, 1))
-#println("OK")
+ # Add imported graphs
+print("Import graphs...")
+g = loadgraph(
+    "benchmark/data/large_twitch_edges.csv", "twitch user network", EdgeListFormat()
+)
+push!(bench_graphs_bfs, BenchGraphs(g, nv(g), "large_twitch_edges.csv", IMPORT, 5))
+push!(bench_graphs_col, BenchGraphs(g, nv(g), "large_twitch_edges.csv", IMPORT, 5))
+println("OK")
 
 #push!(
 #    imported_graphs,
@@ -202,21 +204,21 @@ function bench_BFS(bg::BenchGraphs)
     parents_prepared = [Atomic{Int}(0) for i in 1:nv($bg.graph)])
 
     ## NetworkX implementation
-    g_networkx = nx.Graph()
-    for i in 1:nv(bg.graph)
-        g_networkx.add_edge(i, i)
-    end
-    for i in 1:nv(bg.graph)
-        for j in neighbors(bg.graph, i)
-            g_networkx.add_edge(i, j)
-        end
-    end
-    SUITE["BFS"][string(bg.type) * "_" * bg.name][bg.size]["networkx"] = @benchmarkable $(
-        nx.bfs_tree
-    )(
-        $g_networkx, $bg.start_vertex
-    )
-    evals = 1
+    #g_networkx = nx.Graph()
+    #for i in 1:nv(bg.graph)
+    #    g_networkx.add_edge(i, i)
+    #end
+    #for i in 1:nv(bg.graph)
+    #    for j in neighbors(bg.graph, i)
+    #        g_networkx.add_edge(i, j)
+    #    end
+    #end
+    #SUITE["BFS"][string(bg.type) * "_" * bg.name][bg.size]["networkx"] = @benchmarkable $(
+    #    nx.bfs_tree
+    #)(
+    #    $g_networkx, $bg.start_vertex
+    #)
+    #evals = 1
 
     return SUITE
 end
@@ -226,7 +228,6 @@ for i in eachindex(bench_graphs_bfs)
     bench_BFS(bench_graphs_bfs[i])
 end
 println("OK (", length(bench_graphs_bfs), " added)")
-println("here1")
 
 ##########################
 ### benchmark Coloring ###
@@ -238,15 +239,15 @@ Create a benchmark for Coloring on a graph `g` and store it in the global `SUITE
 """
 function bench_Coloring(bg::BenchGraphs)
     
-    # Our degree sequential
-    SUITE["Coloring"][string(bg.type) * "_" * bg.name][bg.size]["seq"] = @benchmarkable ParallelGraphs.degree_order_and_color(
+    # Our degree max_is 
+    SUITE["Coloring"][string(bg.type) * "_" * bg.name][bg.size]["max_IS_seq"] = @benchmarkable ParallelGraphs.max_is_coloring(
         $bg.graph
     ) evals =1
     
     # Our random sequenti_
-    SUITE["Coloring"][string(bg.type) * "_" * bg.name][bg.size]["seq_random"] = @benchmarkable ParallelGraphs.shuffle_and_color(
-        $bg.graph
-    ) evals =1
+    #SUITE["Coloring"][string(bg.type) * "_" * bg.name][bg.size]["seq_random"] = @benchmarkable ParallelGraphs.shuffle_and_color(
+    #    $bg.graph
+    #) evals =1
     
     # Our BL_
     SUITE["Coloring"][string(bg.type) * "_" * bg.name][bg.size]["BLAS"] = @benchmarkable ParallelGraphs.BLAS_coloring_degree(
@@ -258,20 +259,18 @@ function bench_Coloring(bg::BenchGraphs)
         $bg.graph
     ) evals =1
     
-    # Graph.jl random sequenti_
-    SUITE["Coloring"][string(bg.type) * "_" * bg.name][bg.size]["graphs.jl_seq_random"] = @benchmarkable greedy_color(
-        $bg.graph
-    ) evals = 1
-    
     return SUITE
 end
 
-println("Add Coloring benchmarks...")
+print("Add Coloring benchmarks...")
 for i in eachindex(bench_graphs_col)
     bench_Coloring(bench_graphs_col[i])
 end
 println("OK (", length(bench_graphs_col), " added)")
 
+println("Benchmark setup done.")
+
+print("Run benchmarks for Coloring Num Colors...")
 # Run coloring and save color number
 coloring_sample = 1
 data_colors = DataFrame(; graph=[], size=[], algo_implem=[], color_numbers=[])
@@ -279,41 +278,37 @@ data_colors = DataFrame(; graph=[], size=[], algo_implem=[], color_numbers=[])
 for graph in bench_graphs_col
     graph_name = string(graph.type) * "_" * graph.name
 
+    #color_runs = []
+    #for _ in 1:coloring_sample
+    #    num_colors = ParallelGraphs.degree_order_and_color(graph.graph).num_colors
+    #    push!(color_runs, num_colors)
+    #end
+    #push!(data_colors, (graph_name, graph.size, "seq_degree", color_runs))
+    #print(".")
     color_runs = []
     for _ in 1:coloring_sample
-        num_colors = ParallelGraphs.degree_order_and_color(graph.graph).num_colors
+        num_colors = ParallelGraphs.max_is_coloring(graph.graph).num_colors
         push!(color_runs, num_colors)
     end
-    push!(data_colors, (graph_name, graph.size, "seq_degree", color_runs))
-
-    color_runs = []
-    for _ in 1:coloring_sample
-        num_colors = ParallelGraphs.shuffle_and_color(graph.graph).num_colors
-        push!(color_runs, num_colors)
-    end
-    push!(data_colors, (graph_name, graph.size, "seq_random", color_runs))
-
+    push!(data_colors, (graph_name, graph.size, "max_IS_seq", color_runs))
+    print(".")
     color_runs = []
     for _ in 1:coloring_sample
         num_colors = ParallelGraphs.BLAS_coloring_degree(graph.graph).num_colors
         push!(color_runs, num_colors)
     end
     push!(data_colors, (graph_name, graph.size, "BLAS", color_runs))
-
+    print(".")
     color_runs = []
     for _ in 1:coloring_sample
         num_colors = degree_greedy_color(graph.graph).num_colors
         push!(color_runs, num_colors)
     end
     push!(data_colors, (graph_name, graph.size, "graphs.jl_seq", color_runs))
+    print(".")
 
-    color_runs = []
-    for _ in 1:coloring_sample
-        num_colors = greedy_color(graph.graph).num_colors
-        push!(color_runs, num_colors)
-    end
-    push!(data_colors, (graph_name, graph.size, "graphs.jl_seq_random", color_runs))
 end
+println("OK")
 
 ##############################
 ### benchmarks run methods ###
@@ -361,6 +356,7 @@ function plot_BFS_results(data::DataFrame)
             xlabel="Size",
             ylabel="Time (ns)",
             xscale=:log10,
+            yscla=:log10,
         )
         algo_grouped = groupby(graph_group, :algo_implem)
 
@@ -393,6 +389,7 @@ function plot_coloring_results(data::DataFrame, colors::DataFrame)
             xlabel="Size",
             ylabel="Time (ns)",
             xscale=:log10,
+            yscale=:log10,
         )
         algo_grouped = groupby(graph_group, :algo_implem)
 
