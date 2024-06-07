@@ -23,3 +23,5 @@ benchmark/out/
 julia_citations.bib
 *.dll
 \benchmark\.
+/benchmark/.CondaPkg
+/benchmark/.CondaPkg/env
