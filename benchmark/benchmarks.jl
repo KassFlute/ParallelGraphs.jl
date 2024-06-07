@@ -192,9 +192,8 @@ function bench_BFS(bg::BenchGraphs)
     ## Our GraphBLAS based implementation
     A_T = GBMatrix{Bool}((adjacency_matrix(bg.graph, Bool; dir=:in)))
     SUITE["BFS"][string(bg.type) * "_" * bg.name][bg.size]["BLAS"] = @benchmarkable ParallelGraphs.bfs_BLAS!(
-        $A_T, $bg.start_vertex, p, f
-    ) evals = 1 setup = (p = GBVector{Int}(nv($bg.graph); fill=zero(Int));
-    f = GBVector{Bool}(nv($bg.graph); fill=false))
+        $A_T, $bg.start_vertex, p
+    ) evals = 1 setup = (p = GBVector{Int}(nv($bg.graph); fill=zero(Int));)
 
     ## Graphs.jl implementation
     SUITE["BFS"][string(bg.type) * "_" * bg.name][bg.size]["graphs.jl_par"] = @benchmarkable GP.bfs_tree!(
@@ -227,6 +226,7 @@ for i in eachindex(bench_graphs_bfs)
     bench_BFS(bench_graphs_bfs[i])
 end
 println("OK (", length(bench_graphs_bfs), " added)")
+println("here1")
 
 ##########################
 ### benchmark Coloring ###
@@ -237,27 +237,32 @@ println("OK (", length(bench_graphs_bfs), " added)")
 Create a benchmark for Coloring on a graph `g` and store it in the global `SUITE` variable.
 """
 function bench_Coloring(bg::BenchGraphs)
+    
     # Our degree sequential
     SUITE["Coloring"][string(bg.type) * "_" * bg.name][bg.size]["seq"] = @benchmarkable ParallelGraphs.degree_order_and_color(
-        $bg.gra_
-    ) evals =_
+        $bg.graph
+    ) evals =1
+    
     # Our random sequenti_
     SUITE["Coloring"][string(bg.type) * "_" * bg.name][bg.size]["seq_random"] = @benchmarkable ParallelGraphs.shuffle_and_color(
-        $bg.gra_
-    ) evals =_
+        $bg.graph
+    ) evals =1
+    
     # Our BL_
     SUITE["Coloring"][string(bg.type) * "_" * bg.name][bg.size]["BLAS"] = @benchmarkable ParallelGraphs.BLAS_coloring_degree(
-        $bg.gra_
-    ) evals =_
+        $bg.graph
+    ) evals =1
+    
     # Graph.jl degree sequenti_
     SUITE["Coloring"][string(bg.type) * "_" * bg.name][bg.size]["graphs.jl_seq"] = @benchmarkable degree_greedy_color(
-        $bg.gra_
-    ) evals =_
+        $bg.graph
+    ) evals =1
+    
     # Graph.jl random sequenti_
     SUITE["Coloring"][string(bg.type) * "_" * bg.name][bg.size]["graphs.jl_seq_random"] = @benchmarkable greedy_color(
         $bg.graph
     ) evals = 1
-
+    
     return SUITE
 end
 
