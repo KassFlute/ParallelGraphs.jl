@@ -33,6 +33,7 @@ using SuiteSparseGraphBLAS:
     first,
     second,
     min,
+    pair,
     *,
     +,
     any,
