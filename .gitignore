@@ -14,14 +14,14 @@ benchmark/res/out.csv
 benchmark/out/benchmarks.csv
 benchmark/.Conda/Pkg
 benchmark/.Conda/Pkg/env
-benchmark\.CondaPkg
-benchmark\.CondaPkg\env
-
+benchmark\\.CondaPkg
+benchmark\\.CondaPkg\env
+\\benchmark/.CondaPkg
+\\benchmark/.CondaPkg/env
 
 
 benchmark/out/
 julia_citations.bib
 *.dll
-\benchmark\.
-/benchmark/.CondaPkg
-/benchmark/.CondaPkg/env
+\\benchmark\\.
+/benchmark/.*
