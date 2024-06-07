@@ -35,7 +35,9 @@ using PythonCall
 ### Benchmark setup ###
 #######################
 
-SIZES_TO_GENERATE = [10, 100, 1000, 10000, 100000] # sizes in number of vertices
+# sizes in number of vertices
+SIZES_TO_GENERATE_BFS = [10, 100, 1000, 10000, 100000]
+SIZES_TO_GENERATE_COL = [10, 100, 1000]
 
 # BenchmarkTools parameters
 BenchmarkTools.DEFAULT_PARAMETERS.samples = 10
@@ -73,28 +75,67 @@ struct BenchGraphs
 end
 
 # Generate bench graphs
-SIZES = SIZES_TO_GENERATE # sizes in number of vertices
-bench_graphs = Vector{BenchGraphs}()
+SIZES = SIZES_TO_GENERATE_BFS
+bench_graphs_bfs = Vector{BenchGraphs}()
 print("Generate graphs...")
 for i in eachindex(SIZES)
     v = SIZES[i]
-    push!(bench_graphs, BenchGraphs(dorogovtsev_mendes(v), v, "dorogovtsev_mendes", GEN, 1))
     push!(
-        bench_graphs, BenchGraphs(barabasi_albert(v, 2), v, "barabasi_albert - 2", GEN, 1)
+        bench_graphs_bfs,
+        BenchGraphs(dorogovtsev_mendes(v), v, "dorogovtsev_mendes", GEN, 1),
     )
     push!(
-        bench_graphs, BenchGraphs(barabasi_albert(v, 8), v, "barabasi_albert - 8", GEN, 1)
+        bench_graphs_bfs,
+        BenchGraphs(barabasi_albert(v, 2), v, "barabasi_albert - 2", GEN, 1),
     )
     push!(
-        bench_graphs,
+        bench_graphs_bfs,
+        BenchGraphs(barabasi_albert(v, 8), v, "barabasi_albert - 8", GEN, 1),
+    )
+    push!(
+        bench_graphs_bfs,
         BenchGraphs(binary_tree(round(Int, log2(v)) + 1), v, "binary_tree", GEN, 1),
     )
     #push!(generated_graphs, BenchGraphs(double_binary_tree(round(Int, log2(v))), "double_binary_tree", GENERATED, 1))
-    push!(bench_graphs, BenchGraphs(star_graph(v), v, "star_graph - center start", GEN, 1))
-    push!(bench_graphs, BenchGraphs(star_graph(v), v, "star_graph - border start", GEN, 2))
+    push!(
+        bench_graphs_bfs, BenchGraphs(star_graph(v), v, "star_graph - center start", GEN, 1)
+    )
+    push!(
+        bench_graphs_bfs, BenchGraphs(star_graph(v), v, "star_graph - border start", GEN, 2)
+    )
     N = round(Int, sqrt(sqrt(v)))
-    push!(bench_graphs, BenchGraphs(grid([N, N, N, N]), v, "grid 4 dims", GEN, 1))
+    push!(bench_graphs_bfs, BenchGraphs(grid([N, N, N, N]), v, "grid 4 dims", GEN, 1))
     #push!(generated_graphs, BenchGraphs(path_digraph(v), "path_digraph", GENERATED, round(Int, v / 2)))
+end
+
+SIZES = SIZES_TO_GENERATE_COL
+bench_graphs_col = Vector{BenchGraphs}()
+for i in eachindex(SIZES)
+    v = SIZES[i]
+    push!(
+        bench_graphs_col,
+        BenchGraphs(dorogovtsev_mendes(v), v, "dorogovtsev_mendes", GEN, 1),
+    )
+    push!(
+        bench_graphs_col,
+        BenchGraphs(barabasi_albert(v, 2), v, "barabasi_albert - 2", GEN, 1),
+    )
+    push!(
+        bench_graphs_col,
+        BenchGraphs(barabasi_albert(v, 8), v, "barabasi_albert - 8", GEN, 1),
+    )
+    push!(
+        bench_graphs_col,
+        BenchGraphs(binary_tree(round(Int, log2(v)) + 1), v, "binary_tree", GEN, 1),
+    )
+    push!(
+        bench_graphs_col, BenchGraphs(star_graph(v), v, "star_graph - center start", GEN, 1)
+    )
+    push!(
+        bench_graphs_col, BenchGraphs(star_graph(v), v, "star_graph - border start", GEN, 2)
+    )
+    N = round(Int, sqrt(sqrt(v)))
+    push!(bench_graphs_col, BenchGraphs(grid([N, N, N, N]), v, "grid 4 dims", GEN, 1))
 end
 println("OK")
 
@@ -103,7 +144,8 @@ print("Import graphs...")
 g = loadgraph(
     "benchmark/data/large_twitch_edges.csv", "twitch user network", EdgeListFormat()
 )
-push!(bench_graphs, BenchGraphs(g, nv(g), "large_twitch_edges.csv", IMPORT, 1))
+push!(bench_graphs_bfs, BenchGraphs(g, nv(g), "large_twitch_edges.csv", IMPORT, 1))
+push!(bench_graphs_col, BenchGraphs(g, nv(g), "large_twitch_edges.csv", IMPORT, 1))
 println("OK")
 
 #push!(
@@ -182,10 +224,10 @@ function bench_BFS(bg::BenchGraphs)
 end
 
 print("Add BFS benchmarks...")
-for i in eachindex(bench_graphs)
-    bench_BFS(bench_graphs[i])
+for i in eachindex(bench_graphs_bfs)
+    bench_BFS(bench_graphs_bfs[i])
 end
-println("OK (", length(bench_graphs), " added)")
+println("OK (", length(bench_graphs_bfs), " added)")
 
 ##########################
 ### benchmark Coloring ###
@@ -225,16 +267,16 @@ function bench_Coloring(bg::BenchGraphs)
 end
 
 print("Add Coloring benchmarks...")
-for i in eachindex(bench_graphs)
-    bench_Coloring(bench_graphs[i])
+for i in eachindex(bench_graphs_col)
+    bench_Coloring(bench_graphs_col[i])
 end
-println("OK (", length(bench_graphs), " added)")
+println("OK (", length(bench_graphs_col), " added)")
 
 # Run coloring and save color number
 coloring_sample = 10
 data_colors = DataFrame(; graph=[], size=[], algo_implem=[], color_numbers=[])
 
-for graph in bench_graphs
+for graph in bench_graphs_col
     graph_name = string(graph.type) * ": " * graph.name
 
     color_runs = []
