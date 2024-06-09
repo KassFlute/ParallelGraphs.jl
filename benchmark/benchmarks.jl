@@ -428,7 +428,7 @@ function plot_coloring_results(data::DataFrame, colors::DataFrame)
             plot!(
                 p,
                 sorted_group.size,
-                time_in_seconds,
+                time_in_seconds;
                 label=string(sorted_group.algo_implem[1]),
                 seriestype=:line,
                 marker=markers[j % length(markers) + 1],
